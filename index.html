@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VeritiGame — платформа игр</title>
+<style>
+:root{
+  --bg:#0a0a0f; --bg2:#111117; --bg3:#17171f; --bg4:#1e1e28;
+  --border:#26262f; --border2:#33333f;
+  --text:#e8e8f0; --text2:#8a8a99; --text3:#5a5a6a;
+  --accent:#a78bfa; --accent2:#7c3aed;
+  --green:#4ade80; --red:#f87171; --yellow:#fbbf24; --blue:#60a5fa;
+}
+[data-theme="light"]{
+  --bg:#fafafa; --bg2:#fff; --bg3:#f2f2f5; --bg4:#e8e8ee;
+  --border:#e2e2ea; --border2:#d0d0da;
+  --text:#0a0a0f; --text2:#6a6a7a; --text3:#9a9aaa;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',system-ui,sans-serif;
+  background:var(--bg); color:var(--text);
+  min-height:100vh; overflow-x:hidden;
+  font-size:14px; line-height:1.5;
+  transition:background .2s,color .2s;
+}
+body.perf *{transition:none!important;animation:none!important;backdrop-filter:none!important}
+.hidden{display:none!important}
+button{font-family:inherit;cursor:pointer}
+input,textarea,select{font-family:inherit}
+a{color:var(--accent);text-decoration:none}
+
+/* HEADER */
+header{position:sticky;top:0;z-index:100;background:rgba(10,10,15,.8);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:14px 24px}
+body.perf header{backdrop-filter:none;background:var(--bg)}
+.header-inner{max-width:1280px;margin:0 auto;display:flex;align-items:center;gap:20px}
+.logo{font-size:20px;font-weight:800;letter-spacing:-.5px;display:flex;align-items:center;gap:8px;cursor:pointer}
+.logo-mark{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#a78bfa,#7c3aed);display:grid;place-items:center;font-size:16px}
+nav{display:flex;gap:4px;flex:1}
+.nav-btn{background:transparent;border:none;color:var(--text2);padding:8px 14px;border-radius:8px;font-size:13px;font-weight:500}
+.nav-btn:hover{background:var(--bg3);color:var(--text)}
+.nav-btn.active{background:var(--bg3);color:var(--text)}
+.nav-btn.mod{color:#fbbf24}
+.nav-btn.mod:hover{background:rgba(251,191,36,.1);color:#fbbf24}
+.header-right{display:flex;align-items:center;gap:8px}
+.icon-btn{background:transparent;border:1px solid var(--border);color:var(--text2);width:36px;height:36px;border-radius:8px;display:grid;place-items:center;font-size:15px}
+.icon-btn:hover{background:var(--bg3);color:var(--text);border-color:var(--border2)}
+.icon-btn.on{background:var(--accent);color:#fff;border-color:transparent}
+.user-chip{display:flex;align-items:center;gap:8px;background:var(--bg3);border:1px solid var(--border);padding:6px 12px 6px 6px;border-radius:100px;font-size:13px;font-weight:500;cursor:pointer}
+.user-chip:hover{border-color:var(--border2)}
+.user-avatar{width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,#a78bfa,#7c3aed);display:grid;place-items:center;color:#fff;font-weight:700;font-size:11px}
+
+/* MAIN */
+main{max-width:1280px;margin:0 auto;padding:32px 24px 80px}
+.hero{text-align:center;padding:48px 24px 40px;border-bottom:1px solid var(--border);margin-bottom:32px}
+.hero h1{font-size:clamp(32px,6vw,56px);font-weight:800;letter-spacing:-2px;line-height:1.05;margin-bottom:12px;background:linear-gradient(135deg,#e8e8f0 0%,#a78bfa 50%,#7c3aed 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{color:var(--text2);font-size:15px;max-width:520px;margin:0 auto 24px}
+.hero-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+
+.btn{display:inline-flex;align-items:center;gap:8px;padding:11px 20px;border-radius:10px;font-size:13.5px;font-weight:600;border:1px solid var(--border);background:var(--bg2);color:var(--text);transition:all .15s}
+.btn:hover{background:var(--bg3);border-color:var(--border2);transform:translateY(-1px)}
+.btn:active{transform:translateY(0)}
+.btn-primary{background:var(--accent);color:#fff;border-color:transparent}
+.btn-primary:hover{background:var(--accent2);border-color:transparent}
+.btn-ghost{background:transparent;border-color:var(--border);color:var(--text2)}
+.btn-ghost:hover{background:var(--bg3);color:var(--text)}
+.btn-green{background:var(--green);color:#0a0a0f;border-color:transparent}
+.btn-green:hover{background:#22c55e;border-color:transparent}
+.btn-red{background:transparent;border-color:rgba(248,113,113,.3);color:var(--red)}
+.btn-red:hover{background:rgba(248,113,113,.1);border-color:var(--red)}
+.btn-sm{padding:8px 14px;font-size:12.5px}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+
+/* SEARCH */
+.search-row{display:flex;gap:10px;align-items:center;margin-bottom:20px;flex-wrap:wrap}
+.search-box{flex:1;min-width:220px;position:relative}
+.search-box input{width:100%;padding:11px 14px 11px 38px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:13.5px;outline:none}
+.search-box input:focus{border-color:var(--accent)}
+.search-box svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--text3)}
+.cats{display:flex;gap:6px;flex-wrap:wrap}
+.cat{padding:8px 14px;border-radius:100px;background:var(--bg2);border:1px solid var(--border);color:var(--text2);font-size:12.5px;font-weight:500}
+.cat:hover{color:var(--text);border-color:var(--border2)}
+.cat.active{background:var(--accent);color:#fff;border-color:transparent}
+
+/* GAMES GRID */
+.games-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px}
+@media(max-width:1100px){.games-grid{grid-template-columns:repeat(4,1fr)}}
+@media(max-width:900px){.games-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:640px){.games-grid{grid-template-columns:repeat(2,1fr)}}
+
+.game-card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;overflow:hidden;cursor:pointer;transition:all .15s}
+.game-card:hover{border-color:var(--border2);transform:translateY(-3px);box-shadow:0 12px 30px rgba(0,0,0,.3)}
+.game-thumb{aspect-ratio:16/10;background:linear-gradient(135deg,#2a1a4a 0%,#1a1a2e 100%);display:grid;place-items:center;font-size:56px;color:rgba(167,139,250,.6);position:relative}
+.game-thumb .cat-badge{position:absolute;top:10px;left:10px;background:rgba(0,0,0,.6);backdrop-filter:blur(8px);padding:4px 10px;border-radius:100px;font-size:10.5px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.5px}
+.game-info{padding:14px 16px}
+.game-name{font-size:14.5px;font-weight:700;margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.game-author{color:var(--text2);font-size:12px;margin-bottom:8px}
+.game-stats{display:flex;gap:12px;align-items:center;color:var(--text3);font-size:11.5px}
+.game-stats .stat{display:flex;align-items:center;gap:4px}
+
+.empty{text-align:center;padding:60px 20px;color:var(--text2)}
+.empty .icon{font-size:48px;margin-bottom:16px;opacity:.5}
+.empty h3{font-size:18px;color:var(--text);margin-bottom:8px;font-weight:700}
+.empty p{font-size:13.5px}
+
+/* PROFILE */
+.profile-head{display:flex;align-items:center;gap:20px;padding:24px;background:var(--bg2);border:1px solid var(--border);border-radius:16px;margin-bottom:24px}
+.profile-avatar{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#a78bfa,#7c3aed);display:grid;place-items:center;font-size:36px;font-weight:800;color:#fff;flex-shrink:0}
+.profile-info{flex:1;min-width:0}
+.profile-info h2{font-size:24px;font-weight:800;letter-spacing:-.5px;margin-bottom:4px}
+.profile-info .meta{color:var(--text2);font-size:13px;display:flex;gap:14px;flex-wrap:wrap}
+.profile-info .meta span{display:flex;align-items:center;gap:5px}
+.profile-info .mod-badge{display:inline-block;background:rgba(251,191,36,.15);color:var(--yellow);border:1px solid rgba(251,191,36,.3);padding:3px 10px;border-radius:100px;font-size:11px;font-weight:700;margin-left:8px;vertical-align:middle}
+.profile-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+
+/* MODAL */
+.overlay{position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:20px;overflow-y:auto}
+.overlay.show{display:flex}
+.modal{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:28px;width:100%;max-width:520px;box-shadow:0 30px 80px rgba(0,0,0,.6);position:relative;animation:modalIn .2s ease;max-height:90vh;overflow-y:auto}
+@keyframes modalIn{from{opacity:0;transform:scale(.95) translateY(10px)}}
+.modal h2{font-size:20px;font-weight:700;margin-bottom:6px}
+.modal .sub{color:var(--text2);font-size:13px;margin-bottom:20px}
+.modal-close{position:absolute;top:14px;right:14px;background:transparent;border:none;color:var(--text2);width:32px;height:32px;border-radius:8px;display:grid;place-items:center;font-size:16px}
+.modal-close:hover{background:var(--bg3);color:var(--text)}
+.modal-large{max-width:720px}
+
+.field{margin-bottom:14px}
+.field label{display:block;font-size:12px;color:var(--text2);margin-bottom:6px;font-weight:600}
+.field input,.field textarea,.field select{width:100%;padding:11px 14px;background:var(--bg);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:13.5px;outline:none;transition:border-color .15s}
+.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--accent)}
+.field textarea{resize:vertical;min-height:70px}
+.field .hint{font-size:11.5px;color:var(--text3);margin-top:5px}
+
+.msg{font-size:12.5px;padding:10px 14px;border-radius:8px;margin-top:12px;display:none}
+.msg.show{display:block}
+.msg.error{background:rgba(248,113,113,.1);color:var(--red);border:1px solid rgba(248,113,113,.2)}
+.msg.ok{background:rgba(74,222,128,.1);color:var(--green);border:1px solid rgba(74,222,128,.2)}
+
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:22px}
+.switch-link{text-align:center;margin-top:16px;font-size:13px;color:var(--text2)}
+.switch-link a{cursor:pointer;color:var(--accent);font-weight:600}
+
+/* GAME VIEW */
+.game-view{display:flex;flex-direction:column;gap:20px}
+.game-view-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.game-view-title h1{font-size:28px;font-weight:800;letter-spacing:-.5px;margin-bottom:4px}
+.game-view-title .meta{color:var(--text2);font-size:13px}
+.game-view-actions{display:flex;gap:8px;flex-wrap:wrap}
+.play-area{background:var(--bg2);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+.play-toolbar{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;background:var(--bg3)}
+.play-toolbar .dot{width:9px;height:9px;border-radius:50%;background:var(--red)}
+.play-toolbar .dot:nth-child(2){background:var(--yellow)}
+.play-toolbar .dot:nth-child(3){background:var(--green)}
+.play-toolbar .label{margin-left:12px;font-size:12px;color:var(--text3);font-weight:600}
+.play-toolbar .spacer{flex:1}
+.play-body{padding:20px;min-height:400px;max-height:70vh;overflow:auto;background:#000;font-family:Consolas,'Courier New',monospace}
+.play-body pre{color:#e8e8f0;font-size:13.5px;line-height:1.6;white-space:pre-wrap;word-break:break-word}
+.play-body .output-ok{color:#4ade80}
+.play-body .output-err{color:#f87171}
+.play-body .output-info{color:#8a8a99;font-style:italic}
+
+/* UPLOAD */
+.upload-form{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:24px;max-width:640px;margin:0 auto}
+.upload-form h2{font-size:20px;margin-bottom:6px}
+.upload-form .sub{color:var(--text2);font-size:13px;margin-bottom:22px}
+.file-drop{border:2px dashed var(--border2);border-radius:12px;padding:32px 20px;text-align:center;cursor:pointer;transition:all .15s;background:var(--bg)}
+.file-drop:hover,.file-drop.dragover{border-color:var(--accent);background:rgba(167,139,250,.05)}
+.file-drop .icon{font-size:36px;margin-bottom:10px;opacity:.6}
+.file-drop .text{font-size:13.5px;color:var(--text2)}
+.file-drop .name{margin-top:8px;color:var(--accent);font-weight:600;font-size:13px;word-break:break-all}
+.file-drop input[type=file]{display:none}
+
+/* MODERATION */
+.mod-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:24px}
+.mod-stat{padding:16px;background:var(--bg2);border:1px solid var(--border);border-radius:12px}
+.mod-stat .k{color:var(--text2);font-size:11.5px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.mod-stat .v{font-size:26px;font-weight:800;letter-spacing:-.5px}
+.mod-stat.yellow .v{color:var(--yellow)}
+.mod-stat.green .v{color:var(--green)}
+.mod-stat.red .v{color:var(--red)}
+
+.mod-list{display:flex;flex-direction:column;gap:12px}
+.mod-item{padding:18px;background:var(--bg2);border:1px solid var(--border);border-radius:12px}
+.mod-item-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:10px}
+.mod-item-title{font-size:15px;font-weight:700}
+.mod-item-meta{color:var(--text2);font-size:12px;margin-top:3px}
+.mod-item-desc{color:var(--text2);font-size:13px;line-height:1.5;margin-bottom:12px}
+.mod-item-preview{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;font-family:Consolas,monospace;font-size:11.5px;color:var(--text2);max-height:120px;overflow:hidden;position:relative;margin-bottom:12px;white-space:pre-wrap;word-break:break-word}
+.mod-item-preview::after{content:'';position:absolute;bottom:0;left:0;right:0;height:40px;background:linear-gradient(transparent,var(--bg2))}
+.mod-item-actions{display:flex;gap:8px;flex-wrap:wrap}
+
+.status-badge{display:inline-block;padding:3px 10px;border-radius:100px;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.status-pending{background:rgba(251,191,36,.15);color:var(--yellow);border:1px solid rgba(251,191,36,.3)}
+.status-approved{background:rgba(74,222,128,.15);color:var(--green);border:1px solid rgba(74,222,128,.3)}
+.status-rejected{background:rgba(248,113,113,.15);color:var(--red);border:1px solid rgba(248,113,113,.3)}
+
+/* CODE VIEW */
+.code-view{background:#000;color:#e8e8f0;padding:16px;border-radius:10px;font-family:Consolas,monospace;font-size:12.5px;line-height:1.6;white-space:pre-wrap;word-break:break-word;max-height:400px;overflow:auto;border:1px solid var(--border)}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;left:50%;transform:translate(-50%,120px);background:var(--bg4);border:1px solid var(--border2);padding:12px 22px;border-radius:12px;font-size:13px;font-weight:600;box-shadow:0 20px 50px rgba(0,0,0,.5);z-index:9999;transition:transform .3s}
+.toast.show{transform:translate(-50%,0)}
+
+footer{text-align:center;padding:40px 20px;color:var(--text3);font-size:12.5px;border-top:1px solid var(--border);margin-top:60px}
+
+@media(max-width:640px){
+  header{padding:12px 16px}
+  .header-inner{gap:12px}
+  .logo{font-size:17px}
+  .logo-mark{width:24px;height:24px;font-size:14px}
+  nav{gap:2px}
+  .nav-btn{padding:6px 10px;font-size:12px}
+  .header-right{gap:6px}
+  .user-chip{padding:4px 10px 4px 4px;font-size:12px}
+  main{padding:20px 16px 60px}
+  .hero{padding:32px 16px 24px}
+  .game-thumb{font-size:40px}
+  .modal{padding:22px}
+  .play-body{min-height:300px;padding:14px}
+  .upload-form{padding:20px}
+  .profile-head{flex-direction:column;text-align:center}
+  .profile-info{text-align:center}
+  .profile-info .meta{justify-content:center}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="logo" onclick="showHome()">
+      <div class="logo-mark">🎮</div>
+      VeritiGame
+    </div>
+    <nav>
+      <button class="nav-btn active" data-nav="home" onclick="showHome()">Главная</button>
+      <button class="nav-btn" data-nav="upload" onclick="showUpload()">Загрузить</button>
+      <button class="nav-btn hidden" data-nav="moderation" id="navMod" onclick="showModeration()">🛡 Модерация</button>
+    </nav>
+    <div class="header-right">
+      <button class="icon-btn" id="perfBtn" onclick="togglePerf()" title="Оптимизация">⚡</button>
+      <button class="icon-btn" onclick="toggleTheme()" title="Тема">🌙</button>
+      <button class="icon-btn" id="authBtn" onclick="openAuth()" title="Войти">👤</button>
+      <div class="user-chip hidden" id="userChip" onclick="showProfile()">
+        <div class="user-avatar" id="userAvatar">?</div>
+        <span id="userName">user</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <!-- HOME -->
+  <section id="view-home">
+    <div class="hero">
+      <h1>Игры, созданные сообществом</h1>
+      <p>Загружай свои Python-игры, играй в чужие. Всё в браузере — ничего не устанавливать.</p>
+      <div class="hero-actions">
+        <button class="btn btn-primary" onclick="showUpload()">📤 Загрузить игру</button>
+        <button class="btn btn-ghost" onclick="scrollToGames()">🎮 Смотреть игры</button>
+      </div>
+    </div>
+    <div id="gamesBlock">
+      <div class="search-row">
+        <div class="search-box">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" id="searchInput" placeholder="Поиск игр..." oninput="renderGames()">
+        </div>
+        <div class="cats" id="cats">
+          <button class="cat active" data-cat="all" onclick="setCat('all')">Все</button>
+          <button class="cat" data-cat="Аркада" onclick="setCat('Аркада')">Аркада</button>
+          <button class="cat" data-cat="Головоломка" onclick="setCat('Головоломка')">Головоломка</button>
+          <button class="cat" data-cat="Кликер" onclick="setCat('Кликер')">Кликер</button>
+          <button class="cat" data-cat="Разное" onclick="setCat('Разное')">Разное</button>
+        </div>
+      </div>
+      <div class="games-grid" id="gamesGrid"></div>
+    </div>
+  </section>
+
+  <!-- UPLOAD -->
+  <section id="view-upload" class="hidden">
+    <div class="upload-form">
+      <h2>📤 Загрузить игру</h2>
+      <div class="sub">Только Python-файлы (.py). До 100 КБ. Игра отправится на модерацию.</div>
+      <div class="field">
+        <label>Название игры *</label>
+        <input type="text" id="upName" placeholder="Например: Змейка 3000" maxlength="60">
+      </div>
+      <div class="field">
+        <label>Твой ник *</label>
+        <input type="text" id="upAuthor" placeholder="Например: vanya_dev" maxlength="30">
+      </div>
+      <div class="field">
+        <label>Категория</label>
+        <select id="upCat">
+          <option value="Аркада">Аркада</option>
+          <option value="Головоломка">Головоломка</option>
+          <option value="Кликер">Кликер</option>
+          <option value="Разное">Разное</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Описание</label>
+        <textarea id="upDesc" placeholder="Коротко о том, что делает игра..." maxlength="200"></textarea>
+      </div>
+      <div class="field">
+        <label>Файл игры (.py) *</label>
+        <div class="file-drop" id="fileDrop">
+          <div class="icon">📄</div>
+          <div class="text">Перетащи файл сюда или нажми, чтобы выбрать</div>
+          <div class="name" id="fileName"></div>
+          <input type="file" id="fileInput" accept=".py">
+        </div>
+      </div>
+      <div class="msg" id="uploadMsg"></div>
+      <div style="margin-top:22px;display:flex;gap:10px;justify-content:flex-end">
+        <button class="btn btn-ghost" onclick="showHome()">Отмена</button>
+        <button class="btn btn-primary" onclick="submitUpload()">Отправить на модерацию</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROFILE -->
+  <section id="view-profile" class="hidden">
+    <div class="profile-head">
+      <div class="profile-avatar" id="profileAvatar">?</div>
+      <div class="profile-info">
+        <h2 id="profileNick">user</h2>
+        <div class="meta">
+          <span>🎮 Игр загружено: <span id="profileGames">0</span></span>
+          <span id="profileModBadge"></span>
+        </div>
+        <div class="profile-actions">
+          <button class="btn btn-ghost btn-sm" id="btnModCode" onclick="openModCodeModal()">🛡 Модерация</button>
+          <button class="btn btn-red btn-sm" onclick="logout()">Выйти</button>
+        </div>
+      </div>
+    </div>
+    <h3 style="font-size:18px;font-weight:700;margin-bottom:16px">📦 Мои загрузки</h3>
+    <div class="mod-list" id="myUploadsList"></div>
+  </section>
+
+  <!-- MODERATION -->
+  <section id="view-moderation" class="hidden">
+    <h2 style="font-size:24px;font-weight:800;margin-bottom:6px">🛡 Панель модератора</h2>
+    <p style="color:var(--text2);font-size:13.5px;margin-bottom:24px">Проверяй предложенные игры и одобряй их для публикации</p>
+    <div class="mod-stats">
+      <div class="mod-stat yellow">
+        <div class="k">На модерации</div>
+        <div class="v" id="statPending">0</div>
+      </div>
+      <div class="mod-stat green">
+        <div class="k">Одобрено</div>
+        <div class="v" id="statApproved">0</div>
+      </div>
+      <div class="mod-stat red">
+        <div class="k">Отклонено</div>
+        <div class="v" id="statRejected">0</div>
+      </div>
+    </div>
+    <h3 style="font-size:16px;font-weight:700;margin-bottom:12px">Ожидают проверки</h3>
+    <div class="mod-list" id="moderationList"></div>
+  </section>
+
+  <!-- GAME VIEW -->
+  <section id="view-game" class="hidden">
+    <div class="game-view">
+      <div class="game-view-head">
+        <div class="game-view-title">
+          <h1 id="gvTitle">—</h1>
+          <div class="meta" id="gvMeta">—</div>
+        </div>
+        <div class="game-view-actions">
+          <button class="btn btn-ghost btn-sm" onclick="showHome()">← Назад</button>
+          <button class="btn btn-primary btn-sm" id="gvPlayBtn" onclick="runGame()">▶ Запустить</button>
+        </div>
+      </div>
+      <div id="gvDesc" style="color:var(--text2);font-size:13.5px"></div>
+      <div class="play-area">
+        <div class="play-toolbar">
+          <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+          <span class="label" id="playStatus">Готово</span>
+          <span class="spacer"></span>
+          <button class="btn btn-ghost btn-sm" onclick="clearOutput()">Очистить</button>
+        </div>
+        <div class="play-body" id="playBody">
+          <pre><span class="output-info">Нажми "Запустить", чтобы начать.</span></pre>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>VeritiGame · Платформа браузерных Python-игр · Сделано для сообщества</footer>
+
+<!-- AUTH MODAL -->
+<div class="overlay" id="authOverlay">
+  <div class="modal">
+    <button class="modal-close" onclick="closeAuth()">✕</button>
+    <h2 id="authTitle">Вход</h2>
+    <div class="sub" id="authSub">Войди или создай аккаунт</div>
+    <div class="field">
+      <label>Ник</label>
+      <input type="text" id="authNick" placeholder="Твой ник" maxlength="30" autocomplete="off">
+    </div>
+    <div class="field">
+      <label>Пароль</label>
+      <input type="password" id="authPass" placeholder="••••••" autocomplete="off" onkeydown="if(event.key==='Enter')submitAuth()">
+    </div>
+    <div class="msg" id="authMsg"></div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="submitAuth()" id="authBtnSubmit">Войти</button>
+    </div>
+    <div class="switch-link">
+      <span id="authSwitchText">Нет аккаунта?</span>
+      <a onclick="switchAuth()" id="authSwitch">Регистрация</a>
+    </div>
+  </div>
+</div>
+
+<!-- MOD CODE MODAL -->
+<div class="overlay" id="modCodeOverlay">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModCodeModal()">✕</button>
+    <h2>🛡 Вход в модерацию</h2>
+    <div class="sub">Введи код доступа.</div>
+    <div class="field">
+      <label>Код доступа</label>
+      <input type="password" id="modCodeInput" placeholder="••••••" maxlength="10" autocomplete="off" onkeydown="if(event.key==='Enter')submitModCode()">
+    </div>
+    <div class="msg" id="modCodeMsg"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModCodeModal()">Отмена</button>
+      <button class="btn btn-primary" onclick="submitModCode()">Войти</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODERATION GAME VIEW MODAL -->
+<div class="overlay" id="modGameOverlay">
+  <div class="modal modal-large">
+    <button class="modal-close" onclick="closeModGame()">✕</button>
+    <h2 id="modGameTitle">—</h2>
+    <div class="sub" id="modGameMeta">—</div>
+    <div class="field">
+      <label>Описание</label>
+      <div id="modGameDesc" style="color:var(--text2);font-size:13px;padding:10px 0"></div>
+    </div>
+    <div class="field">
+      <label>Код игры</label>
+      <div class="code-view" id="modGameCode"></div>
+    </div>
+    <div class="field" id="modRejectField" style="display:none">
+      <label>Причина отклонения</label>
+      <input type="text" id="modRejectReason" placeholder="Например: содержит ошибки">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModGame()">Закрыть</button>
+      <button class="btn btn-red" onclick="reviewGame('reject')">✕ Отклонить</button>
+      <button class="btn btn-green" onclick="reviewGame('approve')">✓ Одобрить</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+let state = {
+  user: null,
+  games: [],
+  currentGame: null,
+  currentCat: 'all',
+  pyodide: null,
+  authMode: 'login',
+  isPlaying: false,
+  moderation: { currentGameId: null }
+};
+
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(window._toastT);
+  window._toastT = setTimeout(() => t.classList.remove('show'), 2200);
+}
+function esc(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function saveLocal(){ try { localStorage.setItem('vg_user', JSON.stringify(state.user)); } catch(e){} }
+function loadLocal(){ try { const u = localStorage.getItem('vg_user'); if(u){ state.user = JSON.parse(u); return true; } } catch(e){} return false; }
+
+function toggleTheme(){
+  const cur = document.documentElement.getAttribute('data-theme');
+  const next = cur === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('vg_theme', next);
+}
+function togglePerf(){
+  const on = !document.body.classList.contains('perf');
+  document.body.classList.toggle('perf', on);
+  document.getElementById('perfBtn').classList.toggle('on', on);
+  localStorage.setItem('vg_perf', on ? '1' : '0');
+  toast(on ? '⚡ Оптимизация ВКЛ' : '✨ Обычный режим');
+}
+(function(){
+  const t = localStorage.getItem('vg_theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', t);
+  if(localStorage.getItem('vg_perf') === '1'){
+    document.body.classList.add('perf');
+    document.getElementById('perfBtn').classList.add('on');
+  }
+})();
+
+function setNav(active){
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.nav === active));
+}
+function showHome(){
+  document.querySelectorAll('main > section').forEach(s => s.classList.add('hidden'));
+  document.getElementById('view-home').classList.remove('hidden');
+  setNav('home');
+  renderGames();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function showUpload(){
+  if(!state.user){ toast('Войди в аккаунт'); openAuth(); return; }
+  document.querySelectorAll('main > section').forEach(s => s.classList.add('hidden'));
+  document.getElementById('view-upload').classList.remove('hidden');
+  setNav('upload');
+  document.getElementById('upAuthor').value = state.user.nick;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function showProfile(){
+  if(!state.user){ openAuth(); return; }
+  document.querySelectorAll('main > section').forEach(s => s.classList.add('hidden'));
+  document.getElementById('view-profile').classList.remove('hidden');
+  renderProfile();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function showModeration(){
+  if(!state.user){ openAuth(); return; }
+  if(!state.user.isModerator){ openModCodeModal(); return; }
+  document.querySelectorAll('main > section').forEach(s => s.classList.add('hidden'));
+  document.getElementById('view-moderation').classList.remove('hidden');
+  setNav('moderation');
+  loadModerationList();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function scrollToGames(){ document.getElementById('gamesBlock').scrollIntoView({ behavior: 'smooth' }); }
+
+function openAuth(){ document.getElementById('authOverlay').classList.add('show'); updateAuthUI(); }
+function closeAuth(){ document.getElementById('authOverlay').classList.remove('show'); document.getElementById('authMsg').classList.remove('show'); }
+function switchAuth(){ state.authMode = state.authMode === 'login' ? 'register' : 'login'; updateAuthUI(); }
+function updateAuthUI(){
+  const isLogin = state.authMode === 'login';
+  document.getElementById('authTitle').textContent = isLogin ? 'Вход' : 'Регистрация';
+  document.getElementById('authSub').textContent = isLogin ? 'Войди в аккаунт' : 'Создай новый аккаунт';
+  document.getElementById('authBtnSubmit').textContent = isLogin ? 'Войти' : 'Создать';
+  document.getElementById('authSwitchText').textContent = isLogin ? 'Нет аккаунта?' : 'Уже есть аккаунт?';
+  document.getElementById('authSwitch').textContent = isLogin ? 'Регистрация' : 'Войти';
+}
+async function submitAuth(){
+  const nick = document.getElementById('authNick').value.trim();
+  const pass = document.getElementById('authPass').value;
+  const msg = document.getElementById('authMsg');
+  msg.classList.remove('show');
+  if(nick.length < 2){ msg.textContent = 'Ник минимум 2 символа'; msg.classList.add('show','error'); return; }
+  if(pass.length < 3){ msg.textContent = 'Пароль минимум 3 символа'; msg.classList.add('show','error'); return; }
+  const url = state.authMode === 'login' ? '/api/login' : '/api/register';
+  try {
+    const r = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ nick, pass }) });
+    const data = await r.json();
+    if(!r.ok){ msg.textContent = data.error || 'Ошибка'; msg.classList.add('show','error'); return; }
+    state.user = { nick: data.nick, isModerator: !!data.isModerator, pass };
+    saveLocal(); applyAuthUI(); closeAuth();
+    toast('Добро пожаловать, ' + data.nick + '!');
+  } catch(e){ msg.textContent = 'Сервер не отвечает'; msg.classList.add('show','error'); }
+}
+function logout(){
+  state.user = null;
+  localStorage.removeItem('vg_user');
+  applyAuthUI(); toast('Вышел'); showHome();
+}
+function applyAuthUI(){
+  if(state.user){
+    document.getElementById('authBtn').classList.add('hidden');
+    document.getElementById('userChip').classList.remove('hidden');
+    document.getElementById('userName').textContent = state.user.nick;
+    document.getElementById('userAvatar').textContent = state.user.nick[0].toUpperCase();
+    document.getElementById('navMod').classList.toggle('hidden', !state.user.isModerator);
+  } else {
+    document.getElementById('authBtn').classList.remove('hidden');
+    document.getElementById('userChip').classList.add('hidden');
+    document.getElementById('navMod').classList.add('hidden');
+  }
+}
+
+async function renderProfile(){
+  if(!state.user) return;
+  document.getElementById('profileAvatar').textContent = state.user.nick[0].toUpperCase();
+  document.getElementById('profileNick').textContent = state.user.nick;
+  document.getElementById('profileModBadge').innerHTML = state.user.isModerator ? '<span class="mod-badge">🛡 МОДЕРАТОР</span>' : '';
+  try {
+    const r = await fetch('/api/my-games', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ nick: state.user.nick }) });
+    const list = await r.json();
+    document.getElementById('profileGames').textContent = list.length;
+    const el = document.getElementById('myUploadsList');
+    if(list.length === 0){
+      el.innerHTML = `<div class="empty"><div class="icon">📤</div><h3>Ты ещё ничего не загрузил</h3><p><a onclick="showUpload()" style="cursor:pointer;color:var(--accent)">Загрузи первую игру</a></p></div>`;
+      return;
+    }
+    const statusText = { pending: 'На модерации', approved: 'Опубликована', rejected: 'Отклонена' };
+    el.innerHTML = list.slice().reverse().map(g => `
+      <div class="mod-item">
+        <div class="mod-item-head">
+          <div>
+            <div class="mod-item-title">${esc(g.name)}</div>
+            <div class="mod-item-meta">${esc(g.category)} · ▶ ${g.plays || 0}</div>
+          </div>
+          <span class="status-badge status-${g.status}">${statusText[g.status]}</span>
+        </div>
+        ${g.rejectReason ? `<div class="mod-item-desc" style="color:var(--red)">Причина: ${esc(g.rejectReason)}</div>` : ''}
+      </div>
+    `).join('');
+  } catch(e){ toast('Ошибка'); }
+}
+
+function openModCodeModal(){
+  if(!state.user){ openAuth(); return; }
+  document.getElementById('modCodeOverlay').classList.add('show');
+  document.getElementById('modCodeMsg').classList.remove('show');
+  setTimeout(() => document.getElementById('modCodeInput').focus(), 100);
+}
+function closeModCodeModal(){ document.getElementById('modCodeOverlay').classList.remove('show'); }
+async function submitModCode(){
+  const code = document.getElementById('modCodeInput').value.trim();
+  const msg = document.getElementById('modCodeMsg');
+  msg.classList.remove('show');
+  if(!code){ msg.textContent = 'Введи код'; msg.classList.add('show','error'); return; }
+  try {
+    const r = await fetch('/api/become-moderator', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ nick: state.user.nick, code }) });
+    const data = await r.json();
+    if(!r.ok){ msg.textContent = data.error || 'Ошибка'; msg.classList.add('show','error'); return; }
+    state.user.isModerator = true;
+    saveLocal(); applyAuthUI(); closeModCodeModal();
+    toast('✅ Теперь ты модератор!');
+    showModeration();
+  } catch(e){ msg.textContent = 'Сервер не отвечает'; msg.classList.add('show','error'); }
+}
+
+async function loadModerationList(){
+  if(!state.user || !state.user.isModerator) return;
+  try {
+    const r = await fetch('/api/moderation/list', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ nick: state.user.nick }) });
+    const data = await r.json();
+    if(!r.ok){ toast(data.error || 'Ошибка'); return; }
+    document.getElementById('statPending').textContent = data.stats.pending;
+    document.getElementById('statApproved').textContent = data.stats.approved;
+    document.getElementById('statRejected').textContent = data.stats.rejected;
+    const el = document.getElementById('moderationList');
+    if(data.pending.length === 0){
+      el.innerHTML = '<div class="empty"><div class="icon">✅</div><h3>Всё проверено</h3><p>Нет игр на модерации</p></div>';
+      return;
+    }
+    el.innerHTML = data.pending.map(g => `
+      <div class="mod-item">
+        <div class="mod-item-head">
+          <div>
+            <div class="mod-item-title">${esc(g.name)}</div>
+            <div class="mod-item-meta">от ${esc(g.author)} · ${esc(g.category)}</div>
+          </div>
+          <span class="status-badge status-pending">На модерации</span>
+        </div>
+        <div class="mod-item-desc">${esc(g.desc || 'Без описания')}</div>
+        <div class="mod-item-preview">${esc(g.codePreview)}...</div>
+        <div class="mod-item-actions">
+          <button class="btn btn-ghost btn-sm" onclick="openModGame('${g.id}')">👁 Посмотреть код</button>
+        </div>
+      </div>
+    `).join('');
+  } catch(e){ toast('Ошибка'); }
+}
+async function openModGame(id){
+  state.moderation.currentGameId = id;
+  try {
+    const r = await fetch('/api/moderation/game', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ nick: state.user.nick, id }) });
+    const data = await r.json();
+    if(!r.ok){ toast(data.error || 'Ошибка'); return; }
+    document.getElementById('modGameTitle').textContent = data.name;
+    document.getElementById('modGameMeta').textContent = 'от ' + data.author + ' · ' + data.category;
+    document.getElementById('modGameDesc').textContent = data.desc || 'Без описания';
+    document.getElementById('modGameCode').textContent = data.code;
+    document.getElementById('modRejectField').style.display = 'none';
+    document.getElementById('modRejectReason').value = '';
+    document.getElementById('modGameOverlay').classList.add('show');
+  } catch(e){ toast('Ошибка'); }
+}
+function closeModGame(){
+  document.getElementById('modGameOverlay').classList.remove('show');
+  state.moderation.currentGameId = null;
+}
+async function reviewGame(action){
+  const id = state.moderation.currentGameId;
+  if(!id) return;
+  let reason = '';
+  if(action === 'reject'){
+    const field = document.getElementById('modRejectField');
+    if(field.style.display === 'none'){
+      field.style.display = 'block';
+      document.getElementById('modRejectReason').focus();
+      return;
+    }
+    reason = document.getElementById('modRejectReason').value.trim();
+    if(!reason){ toast('Укажи причину отклонения'); return; }
+  }
+  try {
+    const r = await fetch('/api/moderation/review', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ nick: state.user.nick, id, action, reason }) });
+    const data = await r.json();
+    if(!r.ok){ toast(data.error || 'Ошибка'); return; }
+    toast(action === 'approve' ? '✅ Одобрено' : '❌ Отклонено');
+    closeModGame(); loadModerationList();
+  } catch(e){ toast('Ошибка'); }
+}
+
+async function loadGames(){
+  try {
+    const r = await fetch('/api/games');
+    state.games = await r.json();
+  } catch(e){ state.games = []; }
+  renderGames();
+}
+function setCat(cat){
+  state.currentCat = cat;
+  document.querySelectorAll('.cat').forEach(c => c.classList.toggle('active', c.dataset.cat === cat));
+  renderGames();
+}
+
+function renderGames(){
+  const grid = document.getElementById('gamesGrid');
+  const q = document.getElementById('searchInput').value.toLowerCase().trim();
+  let list = state.games;
+  if(state.currentCat !== 'all') list = list.filter(g => g.category === state.currentCat);
+  if(q) list = list.filter(g => g.name.toLowerCase().includes(q) || g.author.toLowerCase().includes(q));
+
+  // Официальные игры — всегда в начале
+const officialGames = [
+    { name: '🐍 Змейка', cat: 'Аркада', url: '/snake.html', emoji: '🐍', key: 'змейка snake' },
+    { name: '🧱 Тетрис', cat: 'Аркада', url: '/tetris.html', emoji: '🧱', key: 'тетрис tetris' },
+    { name: '🎰 Казино', cat: 'Разное', url: '/casino.html', emoji: '🎰', key: 'казино casino слоты 777' },
+  ];
+
+  let html = '';
+  officialGames.forEach(og => {
+    const show = (!q || og.key.includes(q.toLowerCase())) && (state.currentCat === 'all' || state.currentCat === og.cat);
+    if(!show) return;
+    html += `
+      <div class="game-card" onclick="window.location.href='${og.url}'">
+        <div class="game-thumb" style="background:linear-gradient(135deg,#2a1a4a 0%,#1a1a2e 100%)">
+          <span class="cat-badge">${og.cat}</span>
+          ${og.emoji}
+        </div>
+        <div class="game-info">
+          <div class="game-name">${og.name}</div>
+          <div class="game-author">официальная игра</div>
+          <div class="game-stats">
+            <span class="stat">⭐ Играть</span>
+          </div>
+        </div>
+      </div>
+    `;
+  });
+
+  if(list.length === 0 && !html){
+    html += `<div class="empty" style="grid-column:1/-1"><div class="icon">🎮</div><h3>${q || state.currentCat !== 'all' ? 'Ничего не найдено' : 'Пока нет игр'}</h3><p>${q || state.currentCat !== 'all' ? 'Попробуй другую категорию' : 'Стань первым — загрузи свою игру!'}</p></div>`;
+  } else {
+    html += list.slice().reverse().map(g => `
+      <div class="game-card" onclick="openGame('${g.id}')">
+        <div class="game-thumb">
+          <span class="cat-badge">${esc(g.category || 'Разное')}</span>
+          🎮
+        </div>
+        <div class="game-info">
+          <div class="game-name">${esc(g.name)}</div>
+          <div class="game-author">by ${esc(g.author)}</div>
+          <div class="game-stats">
+            <span class="stat">▶ ${g.plays || 0}</span>
+            <span class="stat">📅 ${new Date(g.date).toLocaleDateString('ru-RU')}</span>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  }
+  grid.innerHTML = html;
+}
+
+async function openGame(id){
+  try {
+    const r = await fetch('/api/game?id=' + encodeURIComponent(id));
+    if(!r.ok){ toast('Игра не найдена'); return; }
+    state.currentGame = await r.json();
+    document.querySelectorAll('main > section').forEach(s => s.classList.add('hidden'));
+    document.getElementById('view-game').classList.remove('hidden');
+    document.getElementById('gvTitle').textContent = state.currentGame.name;
+    document.getElementById('gvMeta').textContent = 'от ' + state.currentGame.author + ' · ' + (state.currentGame.category || 'Разное') + ' · ▶ ' + (state.currentGame.plays || 0);
+    document.getElementById('gvDesc').textContent = state.currentGame.desc || '';
+    document.getElementById('playBody').innerHTML = '<pre><span class="output-info">Нажми "Запустить", чтобы начать.</span></pre>';
+    document.getElementById('playStatus').textContent = 'Готово';
+    setNav('home');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  } catch(e){ toast('Ошибка'); }
+}
+function clearOutput(){ document.getElementById('playBody').innerHTML = '<pre><span class="output-info">Очищено.</span></pre>'; }
+function logPlay(text, cls){
+  const body = document.getElementById('playBody');
+  const pre = body.querySelector('pre');
+  const span = document.createElement('span');
+  if(cls) span.className = cls;
+  span.textContent = text + '\n';
+  pre.appendChild(span);
+  body.scrollTop = body.scrollHeight;
+}
+
+async function ensurePyodide(){
+  if(state.pyodide) return state.pyodide;
+  document.getElementById('playStatus').textContent = 'Загрузка Python...';
+  if(!window.loadPyodide){
+    await new Promise((res, rej) => {
+      const s = document.createElement('script');
+      s.src = 'https://cdn.jsdelivr.net/pyodide/v0.26.2/full/pyodide.js';
+      s.onload = res; s.onerror = rej;
+      document.head.appendChild(s);
+    });
+  }
+  state.pyodide = await loadPyodide({ indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.26.2/full/' });
+  return state.pyodide;
+}
+async function runGame(){
+  if(!state.currentGame) return;
+  if(state.isPlaying){ toast('Уже запущено'); return; }
+  state.isPlaying = true;
+  document.getElementById('gvPlayBtn').disabled = true;
+  document.getElementById('playBody').innerHTML = '<pre></pre>';
+  document.getElementById('playStatus').textContent = 'Запуск...';
+  try {
+    const py = await ensurePyodide();
+    document.getElementById('playStatus').textContent = 'Выполняется';
+    py.setStdout({ batched: (s) => logPlay(s, 'output-ok') });
+    py.setStderr({ batched: (s) => logPlay(s, 'output-err') });
+    const code = state.currentGame.code;
+    const wrapped = `
+import sys
+try:
+    exec(compile(${JSON.stringify(code)}, '<game>', 'exec'), {'__name__': '__main__'})
+except SystemExit:
+    pass
+`;
+    await py.runPythonAsync(wrapped);
+    document.getElementById('playStatus').textContent = '✅ Завершено';
+  } catch(e){
+    logPlay('Ошибка: ' + e.message, 'output-err');
+    document.getElementById('playStatus').textContent = '❌ Ошибка';
+  } finally {
+    state.isPlaying = false;
+    document.getElementById('gvPlayBtn').disabled = false;
+    fetch('/api/play', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ id: state.currentGame.id }) }).catch(()=>{});
+  }
+}
+
+const fileDrop = document.getElementById('fileDrop');
+const fileInput = document.getElementById('fileInput');
+let selectedCode = '';
+fileDrop.addEventListener('click', () => fileInput.click());
+fileInput.addEventListener('change', e => handleFile(e.target.files[0]));
+['dragenter','dragover'].forEach(ev => fileDrop.addEventListener(ev, e => { e.preventDefault(); fileDrop.classList.add('dragover'); }));
+['dragleave','drop'].forEach(ev => fileDrop.addEventListener(ev, e => { e.preventDefault(); fileDrop.classList.remove('dragover'); }));
+fileDrop.addEventListener('drop', e => { const f = e.dataTransfer.files[0]; if(f) handleFile(f); });
+function handleFile(file){
+  if(!file) return;
+  if(!file.name.endsWith('.py')){ toast('Только .py файлы'); return; }
+  if(file.size > 100 * 1024){ toast('Файл больше 100 КБ'); return; }
+  const reader = new FileReader();
+  reader.onload = e => {
+    selectedCode = e.target.result;
+    document.getElementById('fileName').textContent = '📎 ' + file.name + ' (' + (file.size/1024).toFixed(1) + ' КБ)';
+  };
+  reader.readAsText(file);
+}
+async function submitUpload(){
+  const msg = document.getElementById('uploadMsg');
+  msg.classList.remove('show');
+  const name = document.getElementById('upName').value.trim();
+  const author = document.getElementById('upAuthor').value.trim();
+  const cat = document.getElementById('upCat').value;
+  const desc = document.getElementById('upDesc').value.trim();
+  if(name.length < 2){ msg.textContent = 'Введи название'; msg.classList.add('show','error'); return; }
+  if(author.length < 2){ msg.textContent = 'Введи ник'; msg.classList.add('show','error'); return; }
+  if(!selectedCode){ msg.textContent = 'Прикрепи .py файл'; msg.classList.add('show','error'); return; }
+  try {
+    const r = await fetch('/api/upload', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ name, author, desc, category: cat, code: selectedCode }) });
+    const data = await r.json();
+    if(!r.ok){ msg.textContent = data.error || 'Ошибка'; msg.classList.add('show','error'); return; }
+    msg.textContent = '✅ Игра отправлена на модерацию!';
+    msg.classList.add('show','ok');
+    document.getElementById('upName').value = '';
+    document.getElementById('upDesc').value = '';
+    document.getElementById('fileName').textContent = '';
+    selectedCode = '';
+    setTimeout(() => showProfile(), 1200);
+  } catch(e){ msg.textContent = 'Сервер не отвечает'; msg.classList.add('show','error'); }
+}
+
+(async function init(){
+  loadLocal();
+  
+  // Авто-вход: если есть сохранённый пользователь — проверяем на сервере
+  if(state.user && state.user.nick){
+    try {
+      const r = await fetch('/api/auto-login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nick: state.user.nick, pass: state.user.pass || '' })
+      });
+      if(r.ok){
+        const data = await r.json();
+        state.user = { nick: data.nick, isModerator: !!data.isModerator, pass: state.user.pass };
+        saveLocal();
+      } else {
+        // Ник больше не существует — очищаем
+        state.user = null;
+        localStorage.removeItem('vg_user');
+      }
+    } catch(e){ /* сервер недоступен — оставляем как есть */ }
+  }
+  
+  applyAuthUI();
+  await loadGames();
+  
+  ['authOverlay','modCodeOverlay','modGameOverlay'].forEach(id => {
+    document.getElementById(id).addEventListener('click', e => {
+      if(e.target.id === id) document.getElementById(id).classList.remove('show');
+    });
+  });
+  document.addEventListener('keydown', e => {
+    if(e.key === 'Escape') document.querySelectorAll('.overlay.show').forEach(o => o.classList.remove('show'));
+  });
+})();
+</script>
+</body>
+</html>

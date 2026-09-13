@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>🎰 Казино — VeritiGame</title>
+<style>
+:root{
+  --bg:#0a0a0f; --bg2:#111117; --bg3:#17171f; --bg4:#1e1e28;
+  --border:#26262f; --border2:#33333f;
+  --text:#e8e8f0; --text2:#8a8a99; --text3:#5a5a6a;
+  --accent:#a78bfa; --gold:#fbbf24; --gold2:#f59e0b;
+  --green:#4ade80; --red:#f87171;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',system-ui,sans-serif;
+  background:radial-gradient(ellipse at top,#1a0f0a 0%,#0a0a0f 60%);
+  color:var(--text);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-height:100vh;padding:20px;
+  user-select:none;-webkit-user-select:none;
+}
+.header{
+  position:absolute;top:0;left:0;right:0;
+  padding:16px 24px;display:flex;justify-content:space-between;align-items:center;
+  border-bottom:1px solid var(--border);z-index:10;
+}
+.back{
+  color:var(--text2);text-decoration:none;
+  font-size:13.5px;font-weight:600;
+  display:flex;align-items:center;gap:6px;
+  padding:8px 14px;border-radius:8px;
+  background:transparent;border:1px solid var(--border);
+  cursor:pointer;transition:all .15s;
+}
+.back:hover{background:var(--bg3);color:var(--text);border-color:var(--border2)}
+.title{font-size:16px;font-weight:800;letter-spacing:-.3px}
+.title span{color:var(--gold)}
+
+.game-wrap{
+  display:flex;flex-direction:column;gap:20px;align-items:center;
+  margin-top:60px;max-width:520px;width:100%;
+}
+.balance{
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:14px;padding:18px 32px;
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  min-width:240px;
+}
+.balance .label{
+  color:var(--text2);font-size:11.5px;
+  text-transform:uppercase;letter-spacing:1px;font-weight:700;
+}
+.balance .value{
+  font-size:36px;font-weight:900;letter-spacing:-1px;
+  color:var(--gold);font-family:Consolas,monospace;
+  transition:color .3s;
+}
+.balance .value.win{color:var(--green);animation:pop .5s}
+.balance .value.lose{color:var(--red)}
+@keyframes pop{0%{transform:scale(1)}50%{transform:scale(1.3)}100%{transform:scale(1)}}
+
+.slot-machine{
+  background:linear-gradient(180deg,#1e1e28 0%,#111117 100%);
+  border:3px solid var(--gold2);
+  border-radius:24px;padding:24px;
+  box-shadow:0 0 0 1px rgba(251,191,36,.2),0 20px 60px rgba(251,191,36,.15);
+  position:relative;
+}
+.slot-machine::before{
+  content:'';position:absolute;inset:-3px;border-radius:24px;
+  background:linear-gradient(135deg,var(--gold),var(--gold2),var(--gold));
+  z-index:-1;opacity:.3;filter:blur(20px);
+}
+.slots{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+.slot{
+  width:100px;height:120px;background:#0a0a0f;
+  border:2px solid #2a2a35;border-radius:16px;
+  display:grid;place-items:center;
+  font-size:64px;font-weight:900;
+  position:relative;overflow:hidden;
+  box-shadow:inset 0 4px 20px rgba(0,0,0,.8);
+}
+.slot::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(180deg,rgba(255,255,255,.1) 0%,transparent 30%,transparent 70%,rgba(0,0,0,.4) 100%);
+  pointer-events:none;
+}
+.slot .symbol{transition:transform .08s}
+.slot.spinning .symbol{animation:slotSpin .08s linear infinite}
+@keyframes slotSpin{
+  0%{transform:translateY(-20px);opacity:.3}
+  50%{transform:translateY(0);opacity:1}
+  100%{transform:translateY(20px);opacity:.3}
+}
+.slot.win{
+  border-color:var(--gold);
+  box-shadow:inset 0 4px 20px rgba(0,0,0,.8),0 0 30px var(--gold);
+  animation:winPulse .5s infinite alternate;
+}
+@keyframes winPulse{
+  from{box-shadow:inset 0 4px 20px rgba(0,0,0,.8),0 0 30px rgba(251,191,36,.5)}
+  to{box-shadow:inset 0 4px 20px rgba(0,0,0,.8),0 0 50px rgba(251,191,36,.9)}
+}
+.slot.crash{
+  border-color:var(--red);
+  box-shadow:inset 0 4px 20px rgba(0,0,0,.8),0 0 30px var(--red);
+  animation:crashPulse .2s infinite alternate;
+}
+@keyframes crashPulse{
+  from{transform:translate(0,0)}
+  to{transform:translate(-2px,2px)}
+}
+
+.bet-row{display:flex;gap:8px;align-items:center;justify-content:center;margin-bottom:18px;flex-wrap:wrap}
+.bet-row label{color:var(--text2);font-size:12.5px;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.bet-btn{
+  background:var(--bg3);border:1px solid var(--border);
+  color:var(--text);width:40px;height:40px;border-radius:10px;
+  font-size:18px;font-weight:700;cursor:pointer;
+  display:grid;place-items:center;font-family:inherit;
+}
+.bet-btn:hover{background:var(--bg4);border-color:var(--gold)}
+.bet-value{
+  background:var(--bg);border:1px solid var(--border);
+  padding:0 16px;height:40px;border-radius:10px;
+  display:grid;place-items:center;
+  font-family:Consolas,monospace;font-weight:800;
+  color:var(--gold);min-width:80px;font-size:16px;
+}
+.spin-btn{
+  width:100%;padding:20px;border:none;border-radius:16px;
+  background:linear-gradient(135deg,var(--gold),var(--gold2));
+  color:#0a0a0f;font-size:20px;font-weight:900;
+  text-transform:uppercase;letter-spacing:2px;
+  cursor:pointer;font-family:inherit;
+  box-shadow:0 8px 30px rgba(251,191,36,.4);
+  transition:all .2s;
+}
+.spin-btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 12px 40px rgba(251,191,36,.6)}
+.spin-btn:active:not(:disabled){transform:translateY(0)}
+.spin-btn:disabled{opacity:.5;cursor:not-allowed;background:linear-gradient(135deg,#444,#333)}
+
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:100%}
+.stat{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:10px 14px;text-align:center}
+.stat .k{color:var(--text2);font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px}
+.stat .v{font-size:18px;font-weight:800;color:var(--text)}
+
+.win-msg{
+  text-align:center;font-size:15px;font-weight:800;
+  color:var(--green);min-height:24px;
+  transition:opacity .3s;opacity:0;
+}
+.win-msg.show{opacity:1}
+
+/* ============= CRASH OVERLAY ============= */
+.crash-overlay{
+  position:fixed;inset:0;z-index:9999;
+  background:rgba(10,10,15,.98);
+  display:none;align-items:center;justify-content:center;
+  flex-direction:column;gap:16px;
+  padding:20px;text-align:center;
+  animation:crashIn .1s;
+  font-family:Consolas,'Courier New',monospace;
+}
+.crash-overlay.show{display:flex}
+@keyframes crashIn{from{opacity:0}to{opacity:1}}
+
+.crash-glitch{
+  font-size:clamp(48px,12vw,140px);
+  font-weight:900;
+  color:#fff;
+  letter-spacing:-2px;
+  line-height:1;
+  text-shadow:3px 0 0 #f87171, -3px 0 0 #22d3ee;
+  animation:glitch .15s infinite;
+  position:relative;
+}
+@keyframes glitch{
+  0%{transform:translate(0,0)}
+  20%{transform:translate(-3px,2px)}
+  40%{transform:translate(3px,-2px)}
+  60%{transform:translate(-2px,-3px)}
+  80%{transform:translate(2px,3px)}
+  100%{transform:translate(0,0)}
+}
+
+.crash-title{
+  font-size:clamp(28px,6vw,64px);
+  font-weight:900;
+  color:#f87171;
+  text-transform:uppercase;
+  letter-spacing:2px;
+  text-shadow:0 0 30px rgba(248,113,113,.8);
+}
+.crash-subtitle{
+  font-size:clamp(16px,3vw,28px);
+  font-weight:800;
+  color:#fff;
+  letter-spacing:1px;
+  background:var(--red);
+  padding:6px 20px;
+  border-radius:8px;
+  margin-top:8px;
+  animation:blink .5s infinite alternate;
+}
+@keyframes blink{
+  from{opacity:1}
+  to{opacity:.5}
+}
+
+.crash-details{
+  font-family:Consolas,monospace;
+  font-size:13px;
+  color:var(--text2);
+  text-align:left;
+  background:#000;
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:16px;
+  max-width:520px;width:100%;
+  margin-top:20px;
+  line-height:1.6;
+}
+.crash-details .err{color:#f87171}
+.crash-details .warn{color:#fbbf24}
+.crash-details .ok{color:#4ade80}
+
+.crash-progress{
+  width:100%;max-width:400px;
+  height:6px;background:#1a1a2e;
+  border-radius:100px;overflow:hidden;
+  margin-top:20px;
+}
+.crash-progress > div{
+  height:100%;width:0;
+  background:linear-gradient(90deg,#f87171,#fbbf24);
+  animation:progress 3s forwards;
+}
+@keyframes progress{to{width:100%}}
+
+.crash-btn{
+  margin-top:20px;
+  padding:14px 32px;
+  border:none;border-radius:12px;
+  background:#f87171;color:#fff;
+  font-size:15px;font-weight:900;
+  text-transform:uppercase;letter-spacing:1px;
+  cursor:pointer;font-family:inherit;
+  box-shadow:0 8px 30px rgba(248,113,113,.5);
+  opacity:0;pointer-events:none;
+  transition:all .3s;
+}
+.crash-btn.show{opacity:1;pointer-events:auto}
+.crash-btn:hover{transform:translateY(-2px);box-shadow:0 12px 40px rgba(248,113,113,.7)}
+
+.shake{animation:shake .3s}
+@keyframes shake{
+  0%,100%{transform:translate(0,0)}
+  20%{transform:translate(-8px,4px)}
+  40%{transform:translate(6px,-5px)}
+  60%{transform:translate(-5px,-3px)}
+  80%{transform:translate(4px,6px)}
+}
+
+@media(max-width:520px){
+  .slot{width:80px;height:100px;font-size:52px}
+  .stats{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <a class="back" href="/">← На главную</a>
+  <div class="title">🎰 <span>Казино</span></div>
+</div>
+
+<div class="game-wrap">
+  <div class="balance">
+    <div class="label">💰 Баланс</div>
+    <div class="value" id="balance">1000</div>
+  </div>
+
+  <div class="slot-machine">
+    <div class="slots">
+      <div class="slot" id="slot0"><span class="symbol">🍒</span></div>
+      <div class="slot" id="slot1"><span class="symbol">🍋</span></div>
+      <div class="slot" id="slot2"><span class="symbol">🍇</span></div>
+    </div>
+
+    <div class="bet-row">
+      <label>Ставка:</label>
+      <button class="bet-btn" onclick="changeBet(-10)">−</button>
+      <div class="bet-value" id="betValue">50</div>
+      <button class="bet-btn" onclick="changeBet(10)">+</button>
+    </div>
+
+    <button class="spin-btn" id="spinBtn" onclick="spin()">🎰 Крутить</button>
+  </div>
+
+  <div class="win-msg" id="winMsg"></div>
+
+  <div class="stats">
+    <div class="stat"><div class="k">Спинов</div><div class="v" id="spins">0</div></div>
+    <div class="stat"><div class="k">Побед</div><div class="v" id="wins">0</div></div>
+    <div class="stat"><div class="k">Джекпотов</div><div class="v" id="jackpots">0</div></div>
+  </div>
+</div>
+
+<!-- CRASH OVERLAY -->
+<div class="crash-overlay" id="crashOverlay">
+  <div class="crash-glitch" id="glitchText">⚠️ SYSTEM ERROR</div>
+  <div class="crash-title">УПС, САЙТ ЗАВИС</div>
+  <div class="crash-subtitle">ВЫИГРЫШ ОБНУЛЕН</div>
+
+  <div class="crash-details" id="crashDetails"></div>
+
+  <div class="crash-progress"><div></div></div>
+
+  <button class="crash-btn" id="crashBtn" onclick="closeCrash()">Перезагрузить сайт</button>
+</div>
+
+<script>
+/* ============= STATE ============= */
+let balance = parseInt(localStorage.getItem('casino_balance') || '1000');
+let bet = 50;
+let spins = 0;
+let wins = 0;
+let jackpots = 0;
+let isSpinning = false;
+
+const SYMBOLS = ['🍒','🍋','🍇','⭐','🔔','💎','7️⃣'];
+
+/* ============= UI ============= */
+function updateUI(){
+  document.getElementById('balance').textContent = balance;
+  document.getElementById('betValue').textContent = bet;
+  document.getElementById('spins').textContent = spins;
+  document.getElementById('wins').textContent = wins;
+  document.getElementById('jackpots').textContent = jackpots;
+  localStorage.setItem('casino_balance', balance);
+}
+
+function changeBet(delta){
+  if(isSpinning) return;
+  bet = Math.max(10, Math.min(500, bet + delta));
+  updateUI();
+}
+
+function showWinMsg(text, color){
+  const el = document.getElementById('winMsg');
+  el.textContent = text;
+  el.style.color = color || 'var(--green)';
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2000);
+}
+
+/* ============= SPIN ============= */
+function spin(){
+  if(isSpinning) return;
+  if(balance < bet){
+    showWinMsg('❌ Недостаточно средств', 'var(--red)');
+    return;
+  }
+
+  isSpinning = true;
+  balance -= bet;
+  spins++;
+  updateUI();
+  document.getElementById('spinBtn').disabled = true;
+
+  const slots = [0,1,2].map(i => document.getElementById('slot' + i));
+  slots.forEach(s => {
+    s.classList.remove('win','crash');
+    s.classList.add('spinning');
+  });
+
+  // Крутим разные интервалы для каждого слота
+  const results = [null, null, null];
+  const intervals = [60, 80, 100];
+  const durations = [1200, 1500, 1800];
+
+  slots.forEach((slot, i) => {
+    const interval = setInterval(() => {
+      const sym = SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)];
+      slot.querySelector('.symbol').textContent = sym;
+    }, intervals[i]);
+
+    setTimeout(() => {
+      clearInterval(interval);
+      slot.classList.remove('spinning');
+      // Финальный символ
+      let finalSym;
+      // Шанс на 777 ~ 3%
+      if(i === 0 && Math.random() < 0.03){
+        finalSym = '7️⃣';
+        results[i] = '7️⃣';
+      } else {
+        // Обычный символ
+        finalSym = SYMBOLS[Math.floor(Math.random() * (SYMBOLS.length - 1))]; // без 7
+        results[i] = finalSym;
+      }
+      slot.querySelector('.symbol').textContent = finalSym;
+
+      // Если первый уже 7 — попробуем дать всем 7 с 40% шансом
+      if(i === 1 && results[0] === '7️⃣'){
+        if(Math.random() < 0.4){ finalSym = '7️⃣'; results[i] = '7️⃣'; slot.querySelector('.symbol').textContent = finalSym; }
+      }
+      if(i === 2 && results[0] === '7️⃣' && results[1] === '7️⃣'){
+        if(Math.random() < 0.5){ finalSym = '7️⃣'; results[i] = '7️⃣'; slot.querySelector('.symbol').textContent = finalSym; }
+      }
+
+      // Когда все слоты закончились
+      if(i === 2){
+        setTimeout(() => checkResult(results, slots), 300);
+      }
+    }, durations[i]);
+  });
+}
+
+function checkResult(results, slots){
+  // ДЖЕКПОТ — 777
+  if(results[0] === '7️⃣' && results[1] === '7️⃣' && results[2] === '7️⃣'){
+    jackpots++;
+    updateUI();
+    slots.forEach(s => s.classList.add('win'));
+    setTimeout(() => triggerCrash(), 500);
+    return;
+  }
+
+  // Три одинаковых
+  if(results[0] === results[1] && results[1] === results[2]){
+    const multiplier = results[0] === '💎' ? 10 : results[0] === '⭐' ? 5 : 3;
+    const win = bet * multiplier;
+    balance += win;
+    wins++;
+    slots.forEach(s => s.classList.add('win'));
+    showWinMsg(`🎉 x${multiplier} — выигрыш ${win}₽`, 'var(--green)');
+    document.getElementById('balance').classList.add('win');
+    setTimeout(() => document.getElementById('balance').classList.remove('win'), 600);
+    finishSpin();
+    return;
+  }
+
+  // Два одинаковых
+  if(results[0] === results[1] || results[1] === results[2] || results[0] === results[2]){
+    const win = Math.floor(bet * 1.5);
+    balance += win;
+    wins++;
+    showWinMsg(`✨ Пара — выигрыш ${win}₽`, 'var(--gold)');
+    finishSpin();
+    return;
+  }
+
+  // Проигрыш
+  showWinMsg('😢 Мимо...', 'var(--red)');
+  finishSpin();
+}
+
+function finishSpin(){
+  isSpinning = false;
+  document.getElementById('spinBtn').disabled = false;
+  updateUI();
+  // Если закончились деньги — бонус
+  if(balance < 10){
+    setTimeout(() => {
+      balance += 100;
+      updateUI();
+      showWinMsg('💰 Бонус +100₽ за упорство!', 'var(--gold)');
+    }, 1500);
+  }
+}
+
+/* ============= CRASH (777) ============= */
+function triggerCrash(){
+  const overlay = document.getElementById('crashOverlay');
+  const details = document.getElementById('crashDetails');
+  const glitch = document.getElementById('glitchText');
+
+  // Глитчим текст
+  const glitchTexts = ['⚠️ SYSTEM ERROR', '⚠️ F4T4L_ERR0R', '⚠️ KERNEL PANIC', '⚠️ 777_OVERFLOW'];
+  let gi = 0;
+  const glitchInt = setInterval(() => {
+    glitch.textContent = glitchTexts[gi++ % glitchTexts.length];
+  }, 150);
+
+  // Показываем overlay
+  overlay.classList.add('show');
+  document.body.classList.add('shake');
+
+  // Ломаем баланс — обнуляем
+  balance = 0;
+  localStorage.setItem('casino_balance', 0);
+
+  // Логи в консоли
+  const logs = [
+    '<span class="err">[ERROR] Stack overflow in slot_machine.js:777</span>',
+    '<span class="err">[ERROR] Cannot read property "winnings" of null</span>',
+    '<span class="warn">[WARN] Balance integrity check failed</span>',
+    '<span class="warn">[WARN] Recovery attempt 1/3... failed</span>',
+    '<span class="warn">[WARN] Recovery attempt 2/3... failed</span>',
+    '<span class="warn">[WARN] Recovery attempt 3/3... failed</span>',
+    '<span class="err">[FATAL] Balance = NaN</span>',
+    '<span class="err">[FATAL] All winnings have been reset to 0</span>',
+    '',
+    '<span class="ok">> System will restart in 3 seconds...</span>',
+    '<span class="ok">> Thank you for playing VeritiGame Casino 🎰</span>',
+  ];
+
+  details.innerHTML = '';
+  let li = 0;
+  const logInt = setInterval(() => {
+    if(li >= logs.length){ clearInterval(logInt); return; }
+    const div = document.createElement('div');
+    div.innerHTML = logs[li++];
+    details.appendChild(div);
+    details.scrollTop = details.scrollHeight;
+  }, 250);
+
+  // Показываем кнопку через 3 сек
+  setTimeout(() => {
+    clearInterval(glitchInt);
+    document.getElementById('crashBtn').classList.add('show');
+    document.body.classList.remove('shake');
+  }, 3000);
+
+  updateUI();
+}
+
+function closeCrash(){
+  document.getElementById('crashOverlay').classList.remove('show');
+  document.getElementById('crashBtn').classList.remove('show');
+  // Даём 100 на "новую жизнь"
+  balance = 100;
+  updateUI();
+  showWinMsg('💰 Новая игра началась +100₽', 'var(--green)');
+}
+
+/* ============= INIT ============= */
+updateUI();
+</script>
+</body>
+</html>

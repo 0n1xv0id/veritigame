@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>🐍 Змейка — VeritiGame</title>
+<style>
+:root{
+  --bg:#0a0a0f; --bg2:#111117; --bg3:#17171f; --bg4:#1e1e28;
+  --border:#26262f; --border2:#33333f;
+  --text:#e8e8f0; --text2:#8a8a99; --text3:#5a5a6a;
+  --accent:#a78bfa; --accent2:#7c3aed;
+  --green:#4ade80; --red:#f87171; --yellow:#fbbf24;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',system-ui,sans-serif;
+  background:var(--bg);color:var(--text);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-height:100vh;padding:20px;
+  user-select:none;-webkit-user-select:none;
+}
+.header{
+  position:absolute;top:0;left:0;right:0;
+  padding:16px 24px;display:flex;justify-content:space-between;align-items:center;
+  border-bottom:1px solid var(--border);
+}
+.back{
+  color:var(--text2);text-decoration:none;
+  font-size:13.5px;font-weight:600;
+  display:flex;align-items:center;gap:6px;
+  padding:8px 14px;border-radius:8px;
+  background:transparent;border:1px solid var(--border);
+  cursor:pointer;transition:all .15s;
+}
+.back:hover{background:var(--bg3);color:var(--text);border-color:var(--border2)}
+.title{font-size:16px;font-weight:800;letter-spacing:-.3px}
+.title span{color:var(--accent)}
+
+.game-wrap{
+  display:flex;flex-direction:column;gap:16px;align-items:center;
+  margin-top:60px;
+}
+.stats{
+  display:flex;gap:24px;align-items:center;
+  padding:14px 24px;background:var(--bg2);border:1px solid var(--border);border-radius:12px;
+}
+.stat{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:70px}
+.stat .k{color:var(--text2);font-size:11px;text-transform:uppercase;letter-spacing:.5px;font-weight:700}
+.stat .v{font-size:22px;font-weight:800;letter-spacing:-.5px;color:var(--text)}
+.stat.score .v{color:var(--accent)}
+.stat.record .v{color:var(--yellow)}
+
+.canvas-wrap{
+  position:relative;
+  background:#000;
+  border:2px solid var(--border2);
+  border-radius:14px;
+  overflow:hidden;
+  box-shadow:0 20px 60px rgba(0,0,0,.5);
+}
+canvas{display:block;max-width:100%;height:auto}
+
+.overlay{
+  position:absolute;inset:0;
+  background:rgba(10,10,15,.9);
+  display:none;align-items:center;justify-content:center;
+  flex-direction:column;gap:20px;
+  backdrop-filter:blur(6px);
+  padding:20px;text-align:center;
+}
+.overlay.show{display:flex}
+.overlay h2{
+  font-size:32px;font-weight:900;letter-spacing:-1px;
+  background:linear-gradient(135deg,#a78bfa,#7c3aed);
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
+.overlay p{color:var(--text2);font-size:14px;max-width:280px;line-height:1.5}
+.overlay .final-score{font-size:48px;font-weight:900;color:var(--accent);letter-spacing:-2px}
+.overlay .new-record{
+  color:var(--yellow);font-weight:800;font-size:14px;
+  background:rgba(251,191,36,.15);
+  border:1px solid rgba(251,191,36,.3);
+  padding:5px 14px;border-radius:100px;
+}
+
+.btn{
+  padding:12px 24px;border-radius:10px;font-size:14px;font-weight:700;
+  border:1px solid var(--border);background:var(--bg2);color:var(--text);
+  cursor:pointer;font-family:inherit;transition:all .15s;
+}
+.btn:hover{background:var(--bg3);border-color:var(--border2);transform:translateY(-1px)}
+.btn-primary{background:var(--accent);color:#fff;border-color:transparent}
+.btn-primary:hover{background:var(--accent2);border-color:transparent}
+
+.controls{
+  color:var(--text3);font-size:12px;text-align:center;
+  display:flex;gap:16px;flex-wrap:wrap;justify-content:center;
+}
+.controls kbd{
+  background:var(--bg3);border:1px solid var(--border);
+  padding:3px 8px;border-radius:5px;
+  font-family:Consolas,monospace;font-size:11px;
+  color:var(--text2);font-weight:600;
+}
+
+.mobile-controls{
+  display:none;
+  grid-template-columns:repeat(3,64px);
+  grid-template-rows:repeat(3,64px);
+  gap:8px;
+  margin-top:8px;
+}
+.mobile-controls button{
+  background:var(--bg2);border:1px solid var(--border);
+  color:var(--text);border-radius:12px;
+  font-size:24px;font-weight:700;
+  display:grid;place-items:center;
+  cursor:pointer;
+}
+.mobile-controls button:active{background:var(--accent);color:#fff}
+.mobile-controls .up{grid-column:2;grid-row:1}
+.mobile-controls .left{grid-column:1;grid-row:2}
+.mobile-controls .down{grid-column:2;grid-row:3}
+.mobile-controls .right{grid-column:3;grid-row:2}
+
+@media(max-width:640px){
+  .mobile-controls{display:grid}
+  .controls{display:none}
+  .stats{gap:14px;padding:10px 16px}
+  .stat .v{font-size:18px}
+  .stat{min-width:56px}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <a class="back" href="/">← На главную</a>
+  <div class="title">🐍 <span>Змейка</span></div>
+</div>
+
+<div class="game-wrap">
+  <div class="stats">
+    <div class="stat score"><div class="k">Счёт</div><div class="v" id="score">0</div></div>
+    <div class="stat"><div class="k">Уровень</div><div class="v" id="level">1</div></div>
+    <div class="stat record"><div class="k">Рекорд</div><div class="v" id="record">0</div></div>
+  </div>
+
+  <div class="canvas-wrap">
+    <canvas id="canvas" width="600" height="600"></canvas>
+    <div class="overlay show" id="startOverlay">
+      <h2>🐍 Змейка</h2>
+      <p>Собирай яблоки, расти и не врезайся в стены и в себя</p>
+      <button class="btn btn-primary" onclick="startGame()">▶ Начать игру</button>
+      <div class="controls">
+        <span><kbd>↑</kbd> <kbd>↓</kbd> <kbd>←</kbd> <kbd>→</kbd> или <kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd></span>
+        <span><kbd>Пробел</kbd> — пауза</span>
+        <span><kbd>R</kbd> — заново</span>
+      </div>
+    </div>
+    <div class="overlay" id="gameOverOverlay">
+      <h2>Игра окончена</h2>
+      <div class="final-score" id="finalScore">0</div>
+      <div class="new-record hidden" id="newRecord">🏆 НОВЫЙ РЕКОРД!</div>
+      <p id="gameOverMsg">Попробуй снова — ты сможешь лучше!</p>
+      <button class="btn btn-primary" onclick="startGame()">▶ Играть снова</button>
+    </div>
+    <div class="overlay" id="pauseOverlay">
+      <h2>⏸ Пауза</h2>
+      <p>Нажми Пробел или кнопку ниже, чтобы продолжить</p>
+      <button class="btn btn-primary" onclick="togglePause()">▶ Продолжить</button>
+    </div>
+  </div>
+
+  <div class="mobile-controls">
+    <button class="up" onclick="setDir(0,-1)">↑</button>
+    <button class="left" onclick="setDir(-1,0)">←</button>
+    <button class="down" onclick="setDir(0,1)">↓</button>
+    <button class="right" onclick="setDir(1,0)">→</button>
+  </div>
+</div>
+
+<script>
+/* ============= CANVAS SETUP ============= */
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+
+const COLS = 30;
+const ROWS = 30;
+const CELL = canvas.width / COLS;
+
+/* ============= GAME STATE ============= */
+let snake = [];
+let direction = { x: 1, y: 0 };
+let nextDirection = { x: 1, y: 0 };
+let food = { x: 0, y: 0 };
+let score = 0;
+let record = parseInt(localStorage.getItem('snake_record') || '0');
+let speed = 140;
+let level = 1;
+let gameLoop = null;
+let isRunning = false;
+let isPaused = false;
+let foodPulse = 0;
+
+document.getElementById('record').textContent = record;
+
+/* ============= START / RESET ============= */
+function startGame(){
+  document.querySelectorAll('.overlay').forEach(o => o.classList.remove('show'));
+  const cx = Math.floor(COLS / 2);
+  const cy = Math.floor(ROWS / 2);
+  snake = [
+    { x: cx, y: cy },
+    { x: cx - 1, y: cy },
+    { x: cx - 2, y: cy },
+  ];
+  direction = { x: 1, y: 0 };
+  nextDirection = { x: 1, y: 0 };
+  score = 0;
+  level = 1;
+  speed = 140;
+  isRunning = true;
+  isPaused = false;
+  updateUI();
+  spawnFood();
+  if(gameLoop) clearInterval(gameLoop);
+  gameLoop = setInterval(tick, speed);
+}
+
+function togglePause(){
+  if(!isRunning) return;
+  isPaused = !isPaused;
+  if(isPaused){
+    document.getElementById('pauseOverlay').classList.add('show');
+    if(gameLoop) clearInterval(gameLoop);
+  } else {
+    document.getElementById('pauseOverlay').classList.remove('show');
+    gameLoop = setInterval(tick, speed);
+  }
+}
+
+function updateUI(){
+  document.getElementById('score').textContent = score;
+  document.getElementById('level').textContent = level;
+  document.getElementById('record').textContent = record;
+}
+
+/* ============= FOOD ============= */
+function spawnFood(){
+  let attempts = 0;
+  while(attempts < 1000){
+    const fx = Math.floor(Math.random() * COLS);
+    const fy = Math.floor(Math.random() * ROWS);
+    if(!snake.some(s => s.x === fx && s.y === fy)){
+      food = { x: fx, y: fy };
+      return;
+    }
+    attempts++;
+  }
+}
+
+/* ============= DIRECTION ============= */
+function setDir(x, y){
+  // Нельзя развернуться на 180°
+  if(x === -direction.x && y === -direction.y) return;
+  nextDirection = { x, y };
+}
+
+document.addEventListener('keydown', e => {
+  if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key)) e.preventDefault();
+  if(!isRunning && (e.key === ' ' || e.key === 'Enter' || e.key === 'r' || e.key === 'R')){
+    startGame(); return;
+  }
+  if(e.key === 'r' || e.key === 'R'){ startGame(); return; }
+  if(e.key === ' ' || e.key === 'p' || e.key === 'P'){ togglePause(); return; }
+  if(isPaused) return;
+  switch(e.key){
+    case 'ArrowUp': case 'w': case 'W': case 'ц': case 'Ц': setDir(0, -1); break;
+    case 'ArrowDown': case 's': case 'S': case 'ы': case 'Ы': setDir(0, 1); break;
+    case 'ArrowLeft': case 'a': case 'A': case 'ф': case 'Ф': setDir(-1, 0); break;
+    case 'ArrowRight': case 'd': case 'D': case 'в': case 'В': setDir(1, 0); break;
+  }
+});
+
+/* ============= TICK ============= */
+function tick(){
+  if(!isRunning || isPaused) return;
+
+  direction = { ...nextDirection };
+  const head = { x: snake[0].x + direction.x, y: snake[0].y + direction.y };
+
+  // Стены
+  if(head.x < 0 || head.x >= COLS || head.y < 0 || head.y >= ROWS){
+    return gameOver();
+  }
+  // Себя (кроме хвоста)
+  if(snake.slice(0, -1).some(s => s.x === head.x && s.y === head.y)){
+    return gameOver();
+  }
+
+  snake.unshift(head);
+
+  // Съел еду
+  if(head.x === food.x && head.y === food.y){
+    score += 10;
+    level = Math.floor(score / 50) + 1;
+    // Ускорение
+    const newSpeed = Math.max(60, 140 - level * 10);
+    if(newSpeed !== speed){
+      speed = newSpeed;
+      if(gameLoop) clearInterval(gameLoop);
+      gameLoop = setInterval(tick, speed);
+    }
+    updateUI();
+    spawnFood();
+  } else {
+    snake.pop();
+  }
+
+  draw();
+}
+
+/* ============= DRAW ============= */
+function draw(){
+  // Фон
+  ctx.fillStyle = '#0a0a0f';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Сетка (тонкая)
+  ctx.strokeStyle = 'rgba(255,255,255,.02)';
+  ctx.lineWidth = 1;
+  for(let i = 0; i <= COLS; i++){
+    ctx.beginPath();
+    ctx.moveTo(i * CELL, 0);
+    ctx.lineTo(i * CELL, canvas.height);
+    ctx.stroke();
+  }
+  for(let j = 0; j <= ROWS; j++){
+    ctx.beginPath();
+    ctx.moveTo(0, j * CELL);
+    ctx.lineTo(canvas.width, j * CELL);
+    ctx.stroke();
+  }
+
+  // Еда (пульсирующая)
+  foodPulse += 0.15;
+  const pulse = Math.sin(foodPulse) * 2;
+  const fx = food.x * CELL + CELL / 2;
+  const fy = food.y * CELL + CELL / 2;
+  const fr = CELL / 2 - 3 + pulse;
+  const grd = ctx.createRadialGradient(fx, fy, 0, fx, fy, fr + 6);
+  grd.addColorStop(0, '#f87171');
+  grd.addColorStop(0.6, '#ef4444');
+  grd.addColorStop(1, 'rgba(239,68,68,0)');
+  ctx.fillStyle = grd;
+  ctx.beginPath();
+  ctx.arc(fx, fy, fr + 6, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#f87171';
+  ctx.beginPath();
+  ctx.arc(fx, fy, fr, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Змейка
+  snake.forEach((seg, i) => {
+    const x = seg.x * CELL;
+    const y = seg.y * CELL;
+    const pad = 1.5;
+    if(i === 0){
+      // Голова
+      ctx.fillStyle = '#a78bfa';
+      ctx.shadowColor = '#a78bfa';
+      ctx.shadowBlur = 15;
+      roundRect(x + pad, y + pad, CELL - pad * 2, CELL - pad * 2, 6);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+
+      // Глаза
+      ctx.fillStyle = '#0a0a0f';
+      const eyeSize = 3.5;
+      const cx = x + CELL / 2;
+      const cy = y + CELL / 2;
+      if(direction.x === 1){
+        ctx.beginPath(); ctx.arc(cx + 4, cy - 4, eyeSize, 0, 7); ctx.fill();
+        ctx.beginPath(); ctx.arc(cx + 4, cy + 4, eyeSize, 0, 7); ctx.fill();
+      } else if(direction.x === -1){
+        ctx.beginPath(); ctx.arc(cx - 4, cy - 4, eyeSize, 0, 7); ctx.fill();
+        ctx.beginPath(); ctx.arc(cx - 4, cy + 4, eyeSize, 0, 7); ctx.fill();
+      } else if(direction.y === -1){
+        ctx.beginPath(); ctx.arc(cx - 4, cy - 4, eyeSize, 0, 7); ctx.fill();
+        ctx.beginPath(); ctx.arc(cx + 4, cy - 4, eyeSize, 0, 7); ctx.fill();
+      } else {
+        ctx.beginPath(); ctx.arc(cx - 4, cy + 4, eyeSize, 0, 7); ctx.fill();
+        ctx.beginPath(); ctx.arc(cx + 4, cy + 4, eyeSize, 0, 7); ctx.fill();
+      }
+    } else {
+      // Тело — градиент от головы
+      const t = i / snake.length;
+      const c1 = [167, 139, 250];
+      const c2 = [124, 58, 237];
+      const r = Math.round(c1[0] + (c2[0] - c1[0]) * t);
+      const g = Math.round(c1[1] + (c2[1] - c1[1]) * t);
+      const b = Math.round(c1[2] + (c2[2] - c1[2]) * t);
+      ctx.fillStyle = `rgb(${r},${g},${b})`;
+      roundRect(x + pad, y + pad, CELL - pad * 2, CELL - pad * 2, 5);
+      ctx.fill();
+    }
+  });
+}
+
+function roundRect(x, y, w, h, r){
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+
+/* ============= GAME OVER ============= */
+function gameOver(){
+  isRunning = false;
+  if(gameLoop) clearInterval(gameLoop);
+  const isNewRecord = score > record;
+  if(isNewRecord){
+    record = score;
+    localStorage.setItem('snake_record', record);
+  }
+  document.getElementById('finalScore').textContent = score;
+  document.getElementById('newRecord').style.display = isNewRecord ? 'inline-block' : 'none';
+  let msg = 'Попробуй снова!';
+  if(score === 0) msg = 'Ты не съел ни одного яблока 😢';
+  else if(score < 50) msg = 'Неплохо для начала!';
+  else if(score < 150) msg = 'Хороший результат!';
+  else if(score < 300) msg = 'Ты мастер змейки! 🐍';
+  else msg = 'ЛЕГЕНДА! 👑';
+  document.getElementById('gameOverMsg').textContent = msg;
+  document.getElementById('gameOverOverlay').classList.add('show');
+  updateUI();
+}
+
+/* ============= МОБИЛЬНЫЕ СВАЙПЫ ============= */
+let touchStart = null;
+canvas.addEventListener('touchstart', e => {
+  touchStart = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+}, { passive: true });
+canvas.addEventListener('touchend', e => {
+  if(!touchStart) return;
+  const dx = e.changedTouches[0].clientX - touchStart.x;
+  const dy = e.changedTouches[0].clientY - touchStart.y;
+  const absDx = Math.abs(dx), absDy = Math.abs(dy);
+  if(Math.max(absDx, absDy) < 30) return;
+  if(absDx > absDy){
+    setDir(dx > 0 ? 1 : -1, 0);
+  } else {
+    setDir(0, dy > 0 ? 1 : -1);
+  }
+  touchStart = null;
+}, { passive: true });
+
+/* ============= ИДЛ-РИСУНОК ============= */
+draw();
+</script>
+</body>
+</html>
