@@ -1,1 +1,522 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>👆 Тапалка — VeritiGame</title>
+<style>
+:root{
+  --bg:#0a0a0f; --bg2:#111117; --bg3:#17171f; --bg4:#1e1e28;
+  --border:#26262f; --border2:#33333f;
+  --text:#e8e8f0; --text2:#8a8a99; --text3:#5a5a6a;
+  --gold:#fbbf24; --gold2:#f59e0b;
+  --purple:#a78bfa; --green:#4ade80; --red:#f87171;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',system-ui,sans-serif;
+  background:radial-gradient(ellipse at top,#1a0f2e 0%,#0a0a0f 60%);
+  color:var(--text);
+  min-height:100vh;
+  display:flex;flex-direction:column;
+  user-select:none;-webkit-user-select:none;
+  overflow:hidden;
+}
+.header{
+  padding:14px 20px;display:flex;justify-content:space-between;align-items:center;
+  border-bottom:1px solid var(--border);
+}
+.back{
+  color:var(--text2);text-decoration:none;
+  font-size:13.5px;font-weight:600;
+  display:flex;align-items:center;gap:6px;
+  padding:8px 14px;border-radius:8px;
+  background:transparent;border:1px solid var(--border);
+  cursor:pointer;transition:all .15s;
+}
+.back:hover{background:var(--bg3);color:var(--text);border-color:var(--border2)}
+.title{font-size:16px;font-weight:800;letter-spacing:-.3px}
+.title span{color:var(--gold)}
 
+/* COUNTER */
+.counter{
+  text-align:center;padding:20px;
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+}
+.coins{
+  font-size:44px;font-weight:900;letter-spacing:-2px;
+  color:var(--gold);
+  font-family:Consolas,monospace;
+  display:flex;align-items:center;gap:10px;
+  text-shadow:0 0 30px rgba(251,191,36,.5);
+  transition:transform .15s;
+}
+.coins.bump{transform:scale(1.1)}
+.coins .icon{font-size:36px}
+.cps{
+  color:var(--text2);font-size:13px;
+  display:flex;align-items:center;gap:6px;
+}
+.cps .icon{font-size:12px}
+
+/* COIN */
+.coin-wrap{
+  flex:1;
+  display:flex;align-items:center;justify-content:center;
+  position:relative;
+  padding:20px;
+}
+.coin{
+  width:min(280px,70vw);height:min(280px,70vw);
+  border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#fde047 0%,#fbbf24 30%,#f59e0b 70%,#d97706 100%);
+  box-shadow:
+    0 0 0 8px rgba(251,191,36,.2),
+    0 0 0 16px rgba(251,191,36,.1),
+    0 20px 60px rgba(251,191,36,.5),
+    inset 0 -20px 40px rgba(0,0,0,.3),
+    inset 0 20px 40px rgba(255,255,255,.3);
+  display:grid;place-items:center;
+  cursor:pointer;
+  position:relative;
+  transition:transform .08s;
+  overflow:hidden;
+}
+.coin::before{
+  content:'';
+  position:absolute;inset:15%;
+  border-radius:50%;
+  background:radial-gradient(circle at 40% 35%,rgba(255,255,255,.6),transparent 50%);
+  pointer-events:none;
+}
+.coin:active{transform:scale(.95)}
+.coin .symbol{
+  font-size:min(120px,30vw);
+  filter:drop-shadow(0 8px 20px rgba(0,0,0,.3));
+  pointer-events:none;
+  z-index:1;
+}
+.coin.pressed{
+  animation:coinPress .15s;
+}
+@keyframes coinPress{
+  0%{transform:scale(1)}
+  50%{transform:scale(.92)}
+  100%{transform:scale(1)}
+}
+
+/* FLYING NUMBERS */
+.fly-num{
+  position:absolute;
+  font-size:28px;
+  font-weight:900;
+  color:var(--gold);
+  pointer-events:none;
+  animation:flyUp 1s ease-out forwards;
+  z-index:100;
+  text-shadow:0 2px 8px rgba(0,0,0,.5);
+}
+@keyframes flyUp{
+  0%{opacity:1;transform:translate(-50%,-50%) scale(.8)}
+  100%{opacity:0;transform:translate(-50%,-200%) scale(1.4)}
+}
+
+/* ENERGY BAR */
+.energy{
+  padding:0 20px 16px;
+}
+.energy-bar{
+  height:22px;background:var(--bg2);
+  border:2px solid var(--border2);
+  border-radius:100px;
+  overflow:hidden;position:relative;
+}
+.energy-fill{
+  height:100%;width:100%;
+  background:linear-gradient(90deg,#fbbf24,#f59e0b);
+  transition:width .3s;
+  border-radius:100px;
+}
+.energy-text{
+  position:absolute;inset:0;
+  display:grid;place-items:center;
+  font-size:12.5px;font-weight:800;
+  color:#0a0a0f;
+  text-shadow:0 1px 0 rgba(255,255,255,.3);
+  pointer-events:none;
+}
+
+/* BOTTOM PANEL */
+.bottom{
+  background:var(--bg2);border-top:1px solid var(--border);
+  padding:14px 16px;
+  display:flex;flex-direction:column;gap:10px;
+}
+.tabs{display:flex;gap:6px}
+.tab{
+  flex:1;padding:10px;
+  background:var(--bg);border:1px solid var(--border);
+  color:var(--text2);border-radius:10px;
+  font-size:12.5px;font-weight:700;
+  font-family:inherit;cursor:pointer;
+  transition:all .15s;
+}
+.tab.active{background:var(--gold);color:#0a0a0f;border-color:transparent}
+.tab:hover:not(.active){color:var(--text);border-color:var(--border2)}
+
+.upgrades{
+  display:grid;grid-template-columns:repeat(2,1fr);
+  gap:8px;max-height:200px;overflow-y:auto;
+}
+.upgrade{
+  background:var(--bg);border:1px solid var(--border);
+  border-radius:10px;padding:10px 12px;
+  display:flex;align-items:center;gap:10px;
+  cursor:pointer;transition:all .15s;
+  text-align:left;
+}
+.upgrade:hover:not(.disabled){
+  border-color:var(--gold);
+  background:rgba(251,191,36,.05);
+}
+.upgrade.disabled{opacity:.5;cursor:not-allowed}
+.upgrade .icon{
+  font-size:24px;flex-shrink:0;
+}
+.upgrade .info{flex:1;min-width:0}
+.upgrade .name{
+  font-size:12.5px;font-weight:800;margin-bottom:2px;
+}
+.upgrade .desc{
+  font-size:11px;color:var(--text2);
+}
+.upgrade .price{
+  color:var(--gold);font-weight:800;
+  font-size:12.5px;font-family:Consolas,monospace;
+  white-space:nowrap;
+}
+.upgrade .lvl{
+  font-size:10.5px;color:var(--text2);font-weight:700;
+}
+
+/* TOAST */
+.toast{
+  position:fixed;bottom:120px;left:50%;
+  transform:translate(-50%,60px);
+  background:var(--bg4);border:1px solid var(--gold);
+  padding:10px 20px;border-radius:12px;
+  font-size:13px;font-weight:700;
+  color:var(--gold);
+  box-shadow:0 10px 30px rgba(251,191,36,.3);
+  z-index:200;opacity:0;
+  transition:all .3s;
+  pointer-events:none;
+}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+
+/* STATS MODAL */
+.stats{
+  position:fixed;inset:0;z-index:200;
+  background:rgba(0,0,0,.85);
+  display:none;align-items:center;justify-content:center;
+  padding:20px;
+}
+.stats.show{display:flex}
+.stats-box{
+  background:var(--bg2);border:1px solid var(--border2);
+  border-radius:16px;padding:24px;
+  max-width:400px;width:100%;
+}
+.stats-box h2{
+  font-size:20px;margin-bottom:16px;text-align:center;
+  color:var(--gold);
+}
+.stat-row{
+  display:flex;justify-content:space-between;
+  padding:10px 0;
+  border-bottom:1px solid var(--border);
+  font-size:13.5px;
+}
+.stat-row:last-of-type{border-bottom:none}
+.stat-row .k{color:var(--text2)}
+.stat-row .v{font-weight:800;color:var(--gold);font-family:Consolas,monospace}
+.stats-box button{
+  width:100%;padding:12px;margin-top:16px;
+  background:var(--gold);color:#0a0a0f;
+  border:none;border-radius:10px;
+  font-size:14px;font-weight:800;
+  cursor:pointer;font-family:inherit;
+}
+
+@media(max-width:500px){
+  .coins{font-size:36px}
+  .coins .icon{font-size:28px}
+  .coin .symbol{font-size:100px}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <a class="back" href="/">← На главную</a>
+  <div class="title">👆 <span>Тапалка</span></div>
+</div>
+
+<div class="counter">
+  <div class="coins" id="coinsDisplay">
+    <span class="icon">💰</span>
+    <span id="coinsVal">0</span>
+  </div>
+  <div class="cps">
+    <span class="icon">⚡</span>
+    <span id="cpsVal">+1 за тап</span>
+  </div>
+</div>
+
+<div class="coin-wrap" id="coinWrap">
+  <div class="coin" id="coin">
+    <div class="symbol">🪙</div>
+  </div>
+</div>
+
+<div class="energy">
+  <div class="energy-bar">
+    <div class="energy-fill" id="energyFill"></div>
+    <div class="energy-text" id="energyText">500 / 500</div>
+  </div>
+</div>
+
+<div class="bottom">
+  <div class="tabs">
+    <button class="tab active" data-tab="upgrades" onclick="switchTab('upgrades')">🛒 Улучшения</button>
+    <button class="tab" data-tab="stats" onclick="showStats()">📊 Статистика</button>
+  </div>
+  <div class="upgrades" id="upgradesList"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="stats" id="statsModal" onclick="if(event.target.id==='statsModal')closeStats()">
+  <div class="stats-box">
+    <h2>📊 Статистика</h2>
+    <div id="statsContent"></div>
+    <button onclick="closeStats()">Закрыть</button>
+  </div>
+</div>
+
+<script>
+/* ============= STATE ============= */
+let state = {
+  coins: parseInt(localStorage.getItem('tap_coins') || '0'),
+  totalCoins: parseInt(localStorage.getItem('tap_total') || '0'),
+  coinsPerTap: parseInt(localStorage.getItem('tap_per_tap') || '1'),
+  maxEnergy: parseInt(localStorage.getItem('tap_max_energy') || '500'),
+  energy: 500,
+  energyRegen: parseFloat(localStorage.getItem('tap_regen') || '1'),  // в секунду
+  autoTap: parseFloat(localStorage.getItem('tap_auto') || '0'),       // монет в секунду
+  level: parseInt(localStorage.getItem('tap_level') || '1'),
+  taps: parseInt(localStorage.getItem('tap_taps') || '0'),
+  upgrades: JSON.parse(localStorage.getItem('tap_upgrades') || '{}'),
+};
+
+state.energy = state.maxEnergy;
+
+const UPGRADES = [
+  { id: 'tap',     name: 'Сила тапа',       icon: '👆', desc: '+1 монета за тап',         basePrice: 50,    mult: 1.15 },
+  { id: 'maxE',    name: 'Энергия',         icon: '⚡', desc: '+100 к максимуму энергии',  basePrice: 100,   mult: 1.2 },
+  { id: 'regen',   name: 'Восстановление',  icon: '🔋', desc: '+0.5 энергии в секунду',    basePrice: 300,   mult: 1.3 },
+  { id: 'auto',    name: 'Авто-тап',        icon: '🤖', desc: '+1 монета в секунду',       basePrice: 500,   mult: 1.25 },
+];
+
+/* ============= SAVE ============= */
+function save(){
+  localStorage.setItem('tap_coins', state.coins);
+  localStorage.setItem('tap_total', state.totalCoins);
+  localStorage.setItem('tap_per_tap', state.coinsPerTap);
+  localStorage.setItem('tap_max_energy', state.maxEnergy);
+  localStorage.setItem('tap_regen', state.energyRegen);
+  localStorage.setItem('tap_auto', state.autoTap);
+  localStorage.setItem('tap_level', state.level);
+  localStorage.setItem('tap_taps', state.taps);
+  localStorage.setItem('tap_upgrades', JSON.stringify(state.upgrades));
+}
+
+/* ============= UI ============= */
+function formatNum(n){
+  if(n >= 1e9) return (n / 1e9).toFixed(2) + 'B';
+  if(n >= 1e6) return (n / 1e6).toFixed(2) + 'M';
+  if(n >= 1e3) return (n / 1e3).toFixed(2) + 'K';
+  return Math.floor(n);
+}
+
+function updateUI(){
+  document.getElementById('coinsVal').textContent = formatNum(state.coins);
+  document.getElementById('cpsVal').textContent = `+${state.coinsPerTap} за тап` + 
+    (state.autoTap > 0 ? ` · +${state.autoTap.toFixed(1)}/сек` : '');
+  const pct = (state.energy / state.maxEnergy) * 100;
+  document.getElementById('energyFill').style.width = pct + '%';
+  document.getElementById('energyText').textContent = `${Math.floor(state.energy)} / ${state.maxEnergy}`;
+  renderUpgrades();
+  save();
+}
+
+function renderUpgrades(){
+  const list = document.getElementById('upgradesList');
+  list.innerHTML = UPGRADES.map(u => {
+    const lvl = state.upgrades[u.id] || 0;
+    const price = Math.floor(u.basePrice * Math.pow(u.mult, lvl));
+    const canBuy = state.coins >= price;
+    return `
+      <div class="upgrade ${canBuy ? '' : 'disabled'}" onclick="buyUpgrade('${u.id}')">
+        <div class="icon">${u.icon}</div>
+        <div class="info">
+          <div class="name">${u.name} <span class="lvl">Ур. ${lvl}</span></div>
+          <div class="desc">${u.desc}</div>
+        </div>
+        <div class="price">${formatNum(price)}💰</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function toast(text){
+  const t = document.getElementById('toast');
+  t.textContent = text;
+  t.classList.add('show');
+  clearTimeout(window._toastT);
+  window._toastT = setTimeout(() => t.classList.remove('show'), 1500);
+}
+
+/* ============= TAP ============= */
+function tap(e){
+  if(state.energy < 1){
+    toast('⚡ Нет энергии!');
+    return;
+  }
+  state.energy -= 1;
+  const gain = state.coinsPerTap;
+  state.coins += gain;
+  state.totalCoins += gain;
+  state.taps += 1;
+  
+  // Проверка на новый уровень
+  const newLevel = Math.floor(Math.sqrt(state.totalCoins / 100)) + 1;
+  if(newLevel > state.level){
+    state.level = newLevel;
+    toast(`🎉 Уровень ${state.level}!`);
+  }
+  
+  updateUI();
+  
+  // Анимация монеты
+  const coin = document.getElementById('coin');
+  coin.classList.remove('pressed');
+  void coin.offsetWidth;
+  coin.classList.add('pressed');
+  
+  // Летящая цифра
+  const wrap = document.getElementById('coinWrap');
+  const rect = wrap.getBoundingClientRect();
+  let x, y;
+  if(e && e.touches){
+    x = e.touches[0].clientX - rect.left;
+    y = e.touches[0].clientY - rect.top;
+  } else if(e && e.clientX){
+    x = e.clientX - rect.left;
+    y = e.clientY - rect.top;
+  } else {
+    x = rect.width / 2;
+    y = rect.height / 2;
+  }
+  
+  const fly = document.createElement('div');
+  fly.className = 'fly-num';
+  fly.textContent = '+' + gain;
+  fly.style.left = x + 'px';
+  fly.style.top = y + 'px';
+  wrap.appendChild(fly);
+  setTimeout(() => fly.remove(), 1000);
+  
+  // Bump счётчика
+  const cd = document.getElementById('coinsDisplay');
+  cd.classList.add('bump');
+  setTimeout(() => cd.classList.remove('bump'), 150);
+}
+
+document.getElementById('coin').addEventListener('click', tap);
+document.getElementById('coin').addEventListener('touchstart', e => {
+  e.preventDefault();
+  tap(e);
+}, { passive: false });
+
+/* ============= UPGRADES ============= */
+function buyUpgrade(id){
+  const u = UPGRADES.find(x => x.id === id);
+  if(!u) return;
+  const lvl = state.upgrades[id] || 0;
+  const price = Math.floor(u.basePrice * Math.pow(u.mult, lvl));
+  if(state.coins < price){
+    toast('❌ Недостаточно монет');
+    return;
+  }
+  state.coins -= price;
+  state.upgrades[id] = lvl + 1;
+  
+  // Применяем улучшение
+  if(id === 'tap'){
+    state.coinsPerTap += 1;
+  } else if(id === 'maxE'){
+    state.maxEnergy += 100;
+    state.energy = Math.min(state.energy + 100, state.maxEnergy);
+  } else if(id === 'regen'){
+    state.energyRegen += 0.5;
+  } else if(id === 'auto'){
+    state.autoTap += 1;
+  }
+  
+  toast(`✅ ${u.name} улучшено!`);
+  updateUI();
+}
+
+/* ============= TABS / STATS ============= */
+function switchTab(tab){
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+}
+function showStats(){
+  const content = document.getElementById('statsContent');
+  content.innerHTML = `
+    <div class="stat-row"><span class="k">💰 Всего монет</span><span class="v">${formatNum(state.totalCoins)}</span></div>
+    <div class="stat-row"><span class="k">👆 Всего тапов</span><span class="v">${state.taps}</span></div>
+    <div class="stat-row"><span class="k">⚡ За тап</span><span class="v">+${state.coinsPerTap}</span></div>
+    <div class="stat-row"><span class="k">🤖 В секунду</span><span class="v">+${state.autoTap.toFixed(1)}</span></div>
+    <div class="stat-row"><span class="k">⚡ Макс. энергия</span><span class="v">${state.maxEnergy}</span></div>
+    <div class="stat-row"><span class="k">🔋 Восстановление</span><span class="v">${state.energyRegen}/сек</span></div>
+    <div class="stat-row"><span class="k">🎯 Уровень</span><span class="v">${state.level}</span></div>
+    <div class="stat-row"><span class="k">🏆 Рекорд</span><span class="v">${formatNum(state.totalCoins)}</span></div>
+  `;
+  document.getElementById('statsModal').classList.add('show');
+}
+function closeStats(){
+  document.getElementById('statsModal').classList.remove('show');
+}
+
+/* ============= GAME LOOP ============= */
+setInterval(() => {
+  // Восстановление энергии
+  if(state.energy < state.maxEnergy){
+    state.energy = Math.min(state.maxEnergy, state.energy + state.energyRegen);
+  }
+  // Авто-тап
+  if(state.autoTap > 0){
+    state.coins += state.autoTap;
+    state.totalCoins += state.autoTap;
+  }
+  updateUI();
+}, 1000);
+
+/* ============= START ============= */
+updateUI();
+</script>
+</body>
+</html>
