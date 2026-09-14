@@ -744,13 +744,13 @@ function renderGames(){
   if(q) list = list.filter(g => g.name.toLowerCase().includes(q) || g.author.toLowerCase().includes(q));
 
   // Официальные игры — всегда в начале
-const officialGames = [
+  const officialGames = [
     { name: '🐍 Змейка', cat: 'Аркада', url: '/snake.html', emoji: '🐍', key: 'змейка snake' },
     { name: '🧱 Тетрис', cat: 'Аркада', url: '/tetris.html', emoji: '🧱', key: 'тетрис tetris' },
     { name: '🎰 Казино', cat: 'Разное', url: '/casino.html', emoji: '🎰', key: 'казино casino слоты 777' },
     { name: '👆 Тапалка', cat: 'Кликер', url: '/tapalka.html', emoji: '👆', key: 'тапалка tap clicker' },
   ];
-
+  
   let html = '';
   officialGames.forEach(og => {
     const show = (!q || og.key.includes(q.toLowerCase())) && (state.currentCat === 'all' || state.currentCat === og.cat);
